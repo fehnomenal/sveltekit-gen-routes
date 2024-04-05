@@ -1,11 +1,14 @@
 {
   "name": "sveltekit-gen-routes",
-  "module": "index.ts",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "format": "prettier -w src"
+    "format": "prettier -w src",
+    "changeset": "changeset",
+    "version": "changeset version"
   },
   "devDependencies": {
+    "@changesets/cli": "2.27.1",
     "@sindresorhus/slugify": "2.2.1",
     "@types/bun": "latest",
     "just-debounce": "1.1.0",
