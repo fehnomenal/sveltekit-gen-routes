@@ -151,7 +151,6 @@ The `sveltekitRoutes` function takes an object for configuration. Here you can c
   outputDir?: string;
 ```
 
-
 You can define explicit query parameters for each route:
 
 ```ts
@@ -198,4 +197,19 @@ You can even get typesafety inside the configuration object:
 +    }),
    ],
  });
+```
+
+# Development and publishing
+
+```sh
+> bun i
+> # work work work
+> git add ...
+> git commit
+> bun changeset
+> bun version
+> bun run build
+> npm2git c
+> git push
+> git push --tags
 ```

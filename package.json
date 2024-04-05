@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "bun build --target=node --outdir=dist --minify -e typescript src/index.ts",
-    "decls": "tsc",
-    "publish": "rm -rf dist && bun run build && bun run decls",
+    "build:code": "bun build --target=node --outdir=dist --minify -e typescript src/index.ts",
+    "build:declarations": "tsc",
+    "build": "rm -rf dist && bun run build:code && bun run build:declarations",
     "format": "prettier -w src",
     "changeset": "changeset",
     "version": "changeset version"
