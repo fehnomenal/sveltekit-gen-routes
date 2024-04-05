@@ -2,6 +2,12 @@
   "name": "sveltekit-gen-routes",
   "version": "1.0.0",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build:code": "bun build --target=node --outdir=dist --minify -e typescript src/index.ts",
     "build:declarations": "tsc",
