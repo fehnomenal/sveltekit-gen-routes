@@ -1,0 +1,16 @@
+{
+  "name": "sveltekit-gen-routes",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "format": "prettier -w src"
+  },
+  "devDependencies": {
+    "@sindresorhus/slugify": "2.2.1",
+    "@types/bun": "latest",
+    "just-debounce": "1.1.0",
+    "prettier": "3.2.5",
+    "typescript": "5.4.4",
+    "vite": "5.2.8"
+  }
+}
