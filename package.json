@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build": "bun build --target=node --outdir=dist --minify -e typescript src/index.ts",
+    "decls": "tsc",
+    "publish": "rm -rf dist && bun run build && bun run decls",
     "format": "prettier -w src",
     "changeset": "changeset",
     "version": "changeset version"
@@ -15,5 +18,11 @@
     "prettier": "3.2.5",
     "typescript": "5.4.4",
     "vite": "5.2.8"
-  }
+  },
+  "peerDependencies": {
+    "typescript": "*"
+  },
+  "files": [
+    "./dist"
+  ]
 }
