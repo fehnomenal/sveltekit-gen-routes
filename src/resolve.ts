@@ -21,7 +21,7 @@ const getRoutePathParams = (routeId: string) => {
 
   const pathParams: PathParam[] = [];
 
-  for (const [, param, matcher] of routeId.matchAll(/\[(.+?)(?:=(.+))?\]/g)) {
+  for (const [, param, matcher] of routeId.matchAll(/\[(.+?)(?:=(.+?))?\]/g)) {
     if (param.startsWith('...')) {
       pathParams.push({ name: param.slice(3), multi: true });
     } else if (matcher) {
