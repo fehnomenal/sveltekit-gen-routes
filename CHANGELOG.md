@@ -1,5 +1,11 @@
 # sveltekit-gen-routes
 
+## 1.1.1
+
+### Patch Changes
+
+- 4df60c7: Fix generation of deeply nested routes
+
 ## 1.1.0
 
 ### Minor Changes
