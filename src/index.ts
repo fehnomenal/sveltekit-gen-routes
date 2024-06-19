@@ -1,9 +1,10 @@
 import debounce from 'just-debounce';
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { Plugin } from 'vite';
 import { getIndexCodeLines, getRouteKeyCodeLines, helperCodeLines } from './code.js';
 import { getDeclarationFileContentLines } from './declaration.js';
+import { getFilesOfDir } from './readdir.js';
 import { getRouteId, isPageFile, isServerEndpointFile, resolveRouteInfo } from './resolve.js';
 import type { AllRoutesMeta, Config, Route } from './types.js';
 import { isDebug, joinLines } from './utils.js';
@@ -72,14 +73,12 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
     },
 
     async buildStart() {
-      const files = readdirSync(routesDir, { recursive: true, withFileTypes: true });
-
-      for (const { path, name } of files) {
-        if (!isServerEndpointFile(name) && !isPageFile(name)) {
+      for await (const file of getFilesOfDir(routesDir)) {
+        if (!isServerEndpointFile(file) && !isPageFile(file)) {
           continue;
         }
 
-        const id = await this.resolve(`${path}/${name}`, undefined, { skipSelf: true });
+        const id = await this.resolve(file, undefined, { skipSelf: true });
 
         if (!id || !id.id.startsWith(routesDir)) {
           continue;

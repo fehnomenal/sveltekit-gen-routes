@@ -210,13 +210,21 @@ You can even get typesafety inside the configuration object:
 
 # Development and publishing
 
+## Dev
+
 ```sh
 > bun i
 > # work work work
+> bun changeset
 > git add ...
 > git commit
-> bun changeset
+```
+
+## Publish
+
+```sh
 > bun version
+> git commit
 > bun run build
 > npm2git c
 > git push
