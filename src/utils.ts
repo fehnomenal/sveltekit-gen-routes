@@ -11,8 +11,8 @@ export const sortRoutes = (routes: Route[]) =>
 
 export const getStrippedUrl = (routeId: string) =>
   routeId
-    .replaceAll(/\([^/]+\)/g, '')
-    .replaceAll(/\/\/+/g, '')
+    .replaceAll(/\([^/]+?\)/g, '')
+    .replaceAll(/\/\/+/g, '/')
     .replace(/^\//, '');
 
 export const normalizeParameters = (
