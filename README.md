@@ -30,10 +30,7 @@ import { sveltekitRoutes } from 'sveltekit-gen-routes';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [
-    sveltekit(),
-    sveltekitRoutes(),
-  ],
+  plugins: [sveltekit(), sveltekitRoutes()],
 });
 ```
 
@@ -94,37 +91,27 @@ declare module '$routes' {
   type QueryParams = URLSearchParams | Record<string, string | undefined> | [string, string | undefined][];
 
   export const PAGE__ROOT: `${Base}/`;
-  export const PAGE__ROOT_query: (
-    queryParams: QueryParams,
-  ) => `${Base}/${string}`;
+  export const PAGE__ROOT_query: (queryParams: QueryParams) => `${Base}/${string}`;
 
-  export const PAGE_blog_category_slug = (
-    category_slug: string | number,
-    queryParams?: QueryParams,
-  ) => `${Base}/blog/${string | number}${string}`;
+  export const PAGE_blog_category_slug = (category_slug: string | number, queryParams?: QueryParams) =>
+    `${Base}/blog/${string | number}${string}`;
 
   export const PAGE_blog_category_slug_post_id_int = (
     params: {
-      category_slug: string | number,
-      post_id: Param_int,
+      category_slug: string | number;
+      post_id: Param_int;
     },
     queryParams?: QueryParams,
   ) => `${Base}/blog/${string | number}/${Param_int}${string}`;
 
   export const PAGE_contact: `${Base}/contact`;
-  export const PAGE_contact_query: (
-    queryParams: QueryParams,
-  ) => `${Base}/contact${string}`;
+  export const PAGE_contact_query: (queryParams: QueryParams) => `${Base}/contact${string}`;
 
   export const PAGE_home: `${Base}/`;
-  export const PAGE_home_query: (
-    queryParams: QueryParams,
-  ) => `${Base}/${string}`;
+  export const PAGE_home_query: (queryParams: QueryParams) => `${Base}/${string}`;
 
   export const SERVER_api_health_GET: `${Base}/api/health`;
-  export const SERVER_api_health_GET_query: (
-    queryParams: QueryParams,
-  ) => `${Base}/api/health${string}`;
+  export const SERVER_api_health_GET_query: (queryParams: QueryParams) => `${Base}/api/health${string}`;
 
   export const ACTION_contact_submit_form: `${Base}/contact?/submit_form`;
   export const ACTION_contact_submit_form_query: (
@@ -177,10 +164,8 @@ You can define explicit query parameters for each route:
 This removes the generated constant (as the route has parameters now) and changes the function:
 
 ```ts
-  export const SERVER_api_health_GET = (
-    module: string,
-    queryParams?: QueryParams,
-  ) => `${Base}/api/health${string}`;
+export const SERVER_api_health_GET = (module: string, queryParams?: QueryParams) =>
+  `${Base}/api/health${string}`;
 ```
 
 You can even get typesafety inside the configuration object:
