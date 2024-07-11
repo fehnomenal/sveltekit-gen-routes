@@ -1,4 +1,4 @@
-# sveltekit-gen-routes
+# @fehnomenal/sveltekit-gen-routes
 
 This vite plugin generates route helpers for sveltekit routes.
 
@@ -25,8 +25,8 @@ bun add -D 'github:fehnomenal/sveltekit-gen-routes#semver:1.1.1'
 Import and include the plugin in your `vite.config.ts`:
 
 ```ts
+import { sveltekitRoutes } from '@fehnomenal/sveltekit-gen-routes';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { sveltekitRoutes } from 'sveltekit-gen-routes';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -187,8 +187,8 @@ You can even get typesafety inside the configuration object:
 
 ```diff
 +import type { ROUTES } from '$routes';
+ import { sveltekitRoutes } from '@fehnomenal/sveltekit-gen-routes';
  import { sveltekit } from '@sveltejs/kit/vite';
- import { sveltekitRoutes } from 'sveltekit-gen-routes';
  import { defineConfig } from 'vite';
 
  export default defineConfig({
@@ -227,7 +227,7 @@ You can even get typesafety inside the configuration object:
 > git add ...
 > git commit -m "bump version to v..."
 > bun run build
-> npm2git c
+> npm2git cs
 > git push
 > git push --tags
 ```

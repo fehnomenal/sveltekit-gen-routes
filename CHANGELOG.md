@@ -1,4 +1,4 @@
-# sveltekit-gen-routes
+# @fehnomenal/sveltekit-gen-routes
 
 ## 1.1.1
 

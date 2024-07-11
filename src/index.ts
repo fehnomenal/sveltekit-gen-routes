@@ -41,7 +41,7 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   let latestUpdate = 0;
 
   return {
-    name: 'sveltekit-gen-routes',
+    name: '@fehnomenal/sveltekit-gen-routes',
 
     config(_config, env) {
       isDev = env.command === 'serve';
