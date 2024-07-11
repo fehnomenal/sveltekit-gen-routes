@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 3.0.0
+
+### Major Changes
+
+- 172cea9: Try to infer better parameter types
+
 ## 2.0.0
 
 ### Major Changes
