@@ -31,13 +31,18 @@ function* preludeDecls(outputDir: string, paramMatchersDir: string, routes: Rout
     .sort()
     .filter((m, idx, arr) => arr.indexOf(m) === idx);
 
+  if (matchers.length > 0) {
+    yield `type ParamOfMatcher<T extends (...args: any) => any> = T extends (param: any) => param is infer P ? P : string;`;
+    yield '';
+  }
+
   for (const matcher of matchers) {
     let file = relative(outputDir, resolve(paramMatchersDir, `${matcher}.js`));
     if (!file.startsWith('.')) {
       file = `./${file}`;
     }
 
-    yield `type Param_${matcher} = Parameters<typeof import('${file}').match>[0];`;
+    yield `type Param_${matcher} = ParamOfMatcher<typeof import('${file}').match>;`;
   }
   yield '';
 

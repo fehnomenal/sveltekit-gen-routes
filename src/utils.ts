@@ -22,7 +22,7 @@ export const normalizeParameters = (
   const params: NormalizedParameter[] = [];
 
   for (const { name, matcher, multi } of pathParams) {
-    let type = 'string | number';
+    let type = 'string';
     let urlReplaceSearch = `[${name}]`;
 
     if (matcher) {
@@ -31,7 +31,7 @@ export const normalizeParameters = (
     }
 
     if (multi) {
-      type = `string | ${matcher ? type + '[]' : `(${type})[]`}`;
+      type = `string | ${type}[]`;
       urlReplaceSearch = `[...${name}]`;
     }
 
