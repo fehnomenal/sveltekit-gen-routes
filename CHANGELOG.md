@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 3.0.1
+
+### Patch Changes
+
+- 4bcf024: Generate more optimal code
+
 ## 3.0.0
 
 ### Major Changes
