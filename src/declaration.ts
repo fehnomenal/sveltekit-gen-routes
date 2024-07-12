@@ -1,4 +1,5 @@
 import { relative, resolve } from 'node:path';
+import { name } from '../package.json' with { type: 'json' };
 import { flattenRoutes, generateRoutes } from './generate.js';
 import type { Route, RoutesConfig } from './types.js';
 
@@ -23,18 +24,13 @@ export const getDeclarationFileContentLines = (
 ];
 
 function* preludeDecls(outputDir: string, paramMatchersDir: string, routes: Route[]) {
-  yield `type Base = typeof import('$app/paths').base;`;
+  yield `import type { Base, ParamOfMatcher, QueryParams } from '${name}/types';`;
   yield '';
 
   const matchers = routes
     .flatMap((route) => route.pathParams.flatMap((p) => (p.matcher ? [p.matcher] : [])))
     .sort()
     .filter((m, idx, arr) => arr.indexOf(m) === idx);
-
-  if (matchers.length > 0) {
-    yield `type ParamOfMatcher<T extends (...args: any) => any> = T extends (param: any) => param is infer P ? P : string;`;
-    yield '';
-  }
 
   for (const matcher of matchers) {
     let file = relative(outputDir, resolve(paramMatchersDir, `${matcher}.js`));
@@ -45,23 +41,24 @@ function* preludeDecls(outputDir: string, paramMatchersDir: string, routes: Rout
     yield `type Param_${matcher} = ParamOfMatcher<typeof import('${file}').match>;`;
   }
   yield '';
-
-  yield `type QueryParams = URLSearchParams | Record<string, string | undefined> | [string, string | undefined][];`;
-  yield '';
 }
 
 const routeDecls = (routes: Route[], config: RoutesConfig) =>
   generateRoutes(
     routes,
     config,
-    function* ({ identifier, url }) {
-      yield `export const ${identifier}: \`${genUrl(url)}\`;`;
+    function* ({ identifier, baseUrl, urlSuffix }) {
+      const url = baseUrl + (urlSuffix ?? '');
+
+      yield `export const ${identifier}: \`\${Base}/${url}\`;`;
       yield `export const ${identifier}_query: (`;
       yield `  queryParams: QueryParams,`;
-      yield `) => \`${genQueryUrl(url)}\`;`;
+      yield `) => \`\${Base}/${url}\${string}\`;`;
     },
     (param) => (param.multi ? '${string}' : `\${${param.type}}`),
-    function* ({ identifier, url, parameters }) {
+    function* ({ identifier, baseUrl, urlSuffix, parameters }) {
+      const url = baseUrl + (urlSuffix ?? '');
+
       yield `export const ${identifier} = (`;
       if (parameters.length === 1) {
         yield `  ${paramToString(parameters[0])},`;
@@ -73,7 +70,7 @@ const routeDecls = (routes: Route[], config: RoutesConfig) =>
         yield `  },`;
       }
       yield `  queryParams?: QueryParams,`;
-      yield `) => \`${genQueryUrl(url)}\`;`;
+      yield `) => \`\${Base}/${url}\${string}\`;`;
     },
   );
 
@@ -90,9 +87,6 @@ const paramToString = (param: { name: string; type: string; required: boolean })
   return parts.join('');
 };
 
-const genUrl = (url: string) => `\${Base}/${url}`;
-const genQueryUrl = (url: string) => `${genUrl(url)}\${string}`;
-
 function* routesMeta(routes: Route[]) {
   const meta: Record<Route['type'], Record<string, string>> = {
     PAGE: {},
@@ -100,7 +94,7 @@ function* routesMeta(routes: Route[]) {
     ACTION: {},
   };
 
-  for (const [type, , key, , pathParams] of flattenRoutes(routes, {})) {
+  for (const { type, key, pathParams } of flattenRoutes(routes, {})) {
     meta[type][key] = pathParams.length === 0 ? 'never' : pathParams.map((p) => `'${p.name}'`).join(' | ');
   }
 

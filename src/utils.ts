@@ -1,4 +1,4 @@
-import type { Config, DebugKey, NormalizedParameter, PathParam, QueryParams, Route } from './types.js';
+import type { Config, DebugKey, NormalizedParameter, PathParam, QueryParamConfig, Route } from './types.js';
 
 export const sortRoutes = (routes: Route[]) =>
   [
@@ -17,7 +17,7 @@ export const getStrippedUrl = (routeId: string) =>
 
 export const normalizeParameters = (
   pathParams: PathParam[],
-  queryParams: QueryParams | null,
+  queryParams: [string, QueryParamConfig][],
 ): NormalizedParameter[] => {
   const params: NormalizedParameter[] = [];
 
@@ -39,7 +39,7 @@ export const normalizeParameters = (
   }
 
   if (queryParams) {
-    for (const [name, { type, required }] of Object.entries(queryParams)) {
+    for (const [name, { type, required }] of queryParams) {
       params.push({ name, type, multi: false, required: required ?? false });
     }
   }

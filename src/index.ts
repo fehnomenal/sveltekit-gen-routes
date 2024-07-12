@@ -1,8 +1,10 @@
 import debounce from 'just-debounce';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
-import { getIndexCodeLines, getRouteKeyCodeLines, helperCodeLines } from './code.js';
+import { name } from '../package.json' with { type: 'json' };
+import { getIndexCodeLines, getRouteKeyCodeLines } from './code.js';
 import { getDeclarationFileContentLines } from './declaration.js';
 import { getFilesOfDir } from './readdir.js';
 import { getRouteId, isPageFile, isServerEndpointFile, resolveRouteInfo } from './resolve.js';
@@ -10,6 +12,8 @@ import type { AllRoutesMeta, Config, Route } from './types.js';
 import { isDebug, joinLines } from './utils.js';
 
 const MODULE_ID = '\0sveltekit_routes';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   moduleName = '$routes',
@@ -41,7 +45,7 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   let latestUpdate = 0;
 
   return {
-    name: '@fehnomenal/sveltekit-gen-routes',
+    name,
 
     config(_config, env) {
       isDev = env.command === 'serve';
@@ -113,23 +117,28 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
 
     load(id) {
       if (id.startsWith(MODULE_ID)) {
-        const searchIdx = id.indexOf('?');
-        if (searchIdx > -1) {
-          id = id.slice(0, searchIdx);
-        }
         id = id.slice(MODULE_ID.length);
+
+        if (isDev) {
+          const searchIdx = id.indexOf('?');
+          if (searchIdx > -1) {
+            id = id.slice(0, searchIdx);
+          }
+        }
+
+        if (id.endsWith('.js')) {
+          id = id.slice(0, -3);
+        }
 
         let codeLines: string[];
 
-        if (id === '/helpers') {
-          codeLines = helperCodeLines;
-        } else if (id === '') {
+        if (id === '') {
           codeLines = getIndexCodeLines(routes, routesConfig, moduleName);
         } else {
           const key = id.slice(1);
           const filteredRoutes = routes.filter((r) => r.key === key);
 
-          codeLines = getRouteKeyCodeLines(filteredRoutes, routesConfig, moduleName);
+          codeLines = getRouteKeyCodeLines(filteredRoutes, routesConfig);
         }
 
         const code = joinLines(codeLines);
@@ -139,15 +148,7 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
 
           mkdirSync(dirname(outputFile), { recursive: true });
 
-          writeFileSync(
-            outputFile,
-            code
-              .replace(`'${moduleName}/helpers'`, `'./helpers.js'`)
-              .replaceAll(
-                new RegExp(`'${moduleName.replace('$', '\\$')}(/.*?)'`, 'g'),
-                `'./${moduleName}$1.js'`,
-              ),
-          );
+          writeFileSync(outputFile, code.replaceAll(`'${moduleName}`, `'./${moduleName}`));
         }
 
         return code;

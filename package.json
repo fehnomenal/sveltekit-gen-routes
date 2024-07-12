@@ -6,10 +6,17 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./helpers": {
+      "import": "./dist/helpers.js",
+      "types": "./dist/helpers.d.ts"
+    },
+    "./types": {
+      "types": "./dist/public-types.d.ts"
     }
   },
   "scripts": {
-    "build:code": "bun build --target=node --outdir=dist --minify -e typescript src/index.ts",
+    "build:code": "bun build --target=node --outdir=dist --minify --splitting -e typescript src/index.ts src/helpers.ts",
     "build:declarations": "tsc",
     "build": "rm -rf dist && bun run build:code && bun run build:declarations",
     "format": "prettier -w src",

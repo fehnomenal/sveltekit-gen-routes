@@ -1,76 +1,89 @@
+import { name } from '../package.json' with { type: 'json' };
 import { generateRoutes } from './generate.js';
 import type { Route, RoutesConfig } from './types.js';
-
-export const helperCodeLines = [
-  `import { base } from '$app/paths';`,
-  '',
-  `const createSearch = (params, char='?') => {`,
-  `  if (Array.isArray(params)) {`,
-  `    params = filter(params);`,
-  `  } else if (params && !(params instanceof URLSearchParams)) {`,
-  `    params = filter(Object.entries(params));`,
-  `  }`,
-  `  const search = new URLSearchParams(params).toString();`,
-  `  return search ? char+search : '';`,
-  `};`,
-  '',
-  `const createSearchExtra = (params, extra, char) => {`,
-  `  const extraEntries = Object.entries(extra);`,
-  `  if (Array.isArray(params)) {`,
-  `    return createSearch([...params, ...extraEntries], char);`,
-  `  }`,
-  `  if (params instanceof URLSearchParams) {`,
-  `    for (const [k, v] of filter(extraEntries)) {`,
-  `      params.set(k, v);`,
-  `    }`,
-  `    return createSearch(params, char);`,
-  `  }`,
-  `  return createSearch({ ...extra, ...params }, char);`,
-  `};`,
-  '',
-  `const filter = (params) => params.filter((e) => !!e[1]);`,
-  '',
-  `/*@__NO_SIDE_EFFECTS__*/ export const route = (url) => base+'/'+url;`,
-  `/*@__NO_SIDE_EFFECTS__*/ export const routeQuery = (url, char) => {`,
-  `  url = route(url);`,
-  `  return (q) => url + createSearch(q, char);`,
-  `}`,
-  `/*@__NO_SIDE_EFFECTS__*/ export const routeQueryParam = (url, q, char) => route(url) + createSearch(q, char);`,
-  `/*@__NO_SIDE_EFFECTS__*/ export const routeQueryExtra = (url, q, extra, char) => route(url) + createSearchExtra(q, extra, char);`,
-  '',
-  `/*@__NO_SIDE_EFFECTS__*/ export const joinSegments = (segments) => typeof segments === 'string' ? segments : segments.join('/');`,
-];
 
 export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleName: string) => [
   ...generateRoutes(
     routes,
     config,
     function* ({ identifier, codeFileName }) {
-      yield `export { ${identifier}, ${identifier}_query } from '${moduleName}/${codeFileName}';`;
+      yield `export { ${identifier}, ${identifier}_query } from '${moduleName}/${codeFileName}.js';`;
     },
     () => '',
     function* ({ identifier, codeFileName }) {
-      yield `export { ${identifier} } from '${moduleName}/${codeFileName}';`;
+      yield `export { ${identifier} } from '${moduleName}/${codeFileName}.js';`;
     },
   ),
 ];
 
-export const getRouteKeyCodeLines = (routes: Route[], config: RoutesConfig, moduleName: string) => [
-  `import { joinSegments, route, routeQuery, routeQueryParam, routeQueryExtra } from '${moduleName}/helpers';`,
+export const getRouteKeyCodeLines = (routes: Route[], config: RoutesConfig) => [
+  `import { base } from '$app/paths';`,
+  `import { joinSegments, routeQuery, routeQueryParam, routeQueryExtra } from '${name}/helpers';`,
   '',
+  ...genBaseRoute(routes[0], config),
   ...routesCode(routes, config),
 ];
+
+const genBaseRoute = (route: Route, config: RoutesConfig) =>
+  generateRoutes(
+    [route],
+    config,
+    function* ({ baseUrl }) {
+      yield `const route = ${buildRoute(baseUrl)};`;
+    },
+    (param) => (param.multi ? `\${joinSegments(${param.name})}` : `\${${param.name}}`),
+    function* ({ baseUrl, parameters }) {
+      const pathParams = parameters.filter((p) => p.urlReplaceSearch !== undefined);
+
+      if (pathParams.length === 0) {
+        yield `const route = ${buildRoute(baseUrl)};`;
+      } else {
+        const parts = [`const route = (`];
+
+        parts.push(pathParams.map((p) => p.name).join(', '));
+
+        parts.push(') => ');
+        parts.push(buildRoute(baseUrl));
+
+        yield parts.join('');
+      }
+    },
+  );
 
 const routesCode = (routes: Route[], config: RoutesConfig) =>
   generateRoutes(
     routes,
     config,
-    function* ({ identifier, url }) {
-      yield `export const ${identifier} = ${route(url)};`;
-      yield `export const ${identifier}_query = ${routeQuery(url)};`;
+    function* ({ identifier, baseUrl, urlSuffix }) {
+      let route = 'route';
+      const url = baseUrl + (urlSuffix ?? '');
+
+      if (urlSuffix) {
+        route = `route_${identifier}`;
+
+        yield `const ${route} = \`\${route}${urlSuffix}\`;`;
+      }
+
+      yield `export const ${identifier} = ${route};`;
+      yield `export const ${identifier}_query = ${buildRouteQuery(route, url)}`;
     },
     (param) => (param.multi ? `\${joinSegments(${param.name})}` : `\${${param.name}}`),
-    function* ({ identifier, url, parameters }) {
+    function* ({ identifier, baseUrl, urlSuffix, parameters }) {
+      let route: string;
+      const url = baseUrl + (urlSuffix ?? '');
+
+      const pathParams = parameters.filter((p) => p.urlReplaceSearch !== undefined);
+
+      if (pathParams.length === 0) {
+        route = 'route';
+      } else {
+        route = `route(${pathParams.map((p) => p.name).join(', ')})`;
+      }
+
+      if (urlSuffix) {
+        route = `\`\${${route}}${urlSuffix}\``;
+      }
+
       const parts = [`export const ${identifier} = (`];
 
       const explicitQueryParamNames = parameters
@@ -85,25 +98,37 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
         parts.push(' }');
       }
 
-      parts.push(', q) => ');
+      parts.push(`, ${EXTRA_QUERY_PARAM_NAME}) => `);
 
       if (explicitQueryParamNames.length === 0) {
-        parts.push(routeQueryParam(url));
+        parts.push(buildRouteQueryParam(route, url));
       } else {
-        parts.push(routeQueryExtra(url, explicitQueryParamNames));
+        parts.push(buildRouteQueryExtra(route, url, explicitQueryParamNames));
       }
 
       yield parts.join('');
     },
   );
 
-const route = (url: string) => routeCall('route', url);
-const routeQuery = (url: string) => routeCall('routeQuery', url, [querySepCharArg(url)]);
-const routeQueryParam = (url: string) => routeCall('routeQueryParam', url, ['q', querySepCharArg(url)]);
-const routeQueryExtra = (url: string, explicitQueryParamNames: string[]) =>
-  routeCall('routeQueryExtra', url, ['q', `{ ${explicitQueryParamNames.join(', ')} }`, querySepCharArg(url)]);
+const EXTRA_QUERY_PARAM_NAME = 'q';
 
-const routeCall = (fn: string, url: string, args: (string | false | null | undefined)[] = []) =>
-  `${fn}(${[`\`${url}\``, ...args.filter(Boolean)].join(', ')})`;
+const buildRoute = (url: string) => `\`\${base}/${url}\``;
 
-const querySepCharArg = (url: string) => url.includes('?') && `'&'`;
+const buildRouteQuery = (route: string, url: string) => routeCall('routeQuery', route, querySepCharArg(url));
+
+const buildRouteQueryParam = (route: string, url: string) =>
+  routeCall('routeQueryParam', route, EXTRA_QUERY_PARAM_NAME, querySepCharArg(url));
+
+const buildRouteQueryExtra = (route: string, url: string, explicitQueryParamNames: string[]) =>
+  routeCall(
+    'routeQueryExtra',
+    route,
+    EXTRA_QUERY_PARAM_NAME,
+    `{ ${explicitQueryParamNames.join(', ')} }`,
+    querySepCharArg(url),
+  );
+
+const routeCall = (fnName: string, url: string, ...args: (string | false | null | undefined)[]) =>
+  `${fnName}(${[url, ...args.filter(Boolean)].join(', ')})`;
+
+const querySepCharArg = (url: string) => (url.includes('?') ? `'&'` : undefined);
