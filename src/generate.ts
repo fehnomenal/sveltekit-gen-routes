@@ -15,18 +15,22 @@ type GeneratorParamsWithParams = GeneratorParams & {
 export function* generateRoutes(
   routes: Route[],
   config: RoutesConfig,
-  generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string>,
+  generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string, 'stop' | void>,
   getUrlReplacementString: (param: NormalizedParameter) => string,
-  generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string>,
+  generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string, 'stop' | void>,
 ) {
   for (const route of flattenRoutes(routes, config)) {
-    yield* generateRoute(
+    const maybeStop = yield* generateRoute(
       route,
       generateRouteWithoutParameters,
       getUrlReplacementString,
       generateRouteWithParameters,
     );
     yield '';
+
+    if (maybeStop === 'stop') {
+      break;
+    }
   }
 }
 
@@ -96,22 +100,20 @@ export const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute
 
 function* generateRoute(
   route: FinalRoute,
-  generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string>,
+  generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string, 'stop' | void>,
   getUrlReplacementString: (param: NormalizedParameter) => string,
-  generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string>,
+  generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string, 'stop' | void>,
 ) {
   let { type, key, codeFileName, baseUrl, urlSuffix, pathParams, queryParams } = route;
   const identifier = `${type}_${key}`;
 
-  if (pathParams.length === 0 && (!queryParams || Object.keys(queryParams).length === 0)) {
-    yield* generateRouteWithoutParameters({
+  if (pathParams.length === 0 && queryParams.length === 0) {
+    return yield* generateRouteWithoutParameters({
       identifier,
       codeFileName,
       baseUrl,
       urlSuffix,
     });
-
-    return;
   }
 
   const parameters = normalizeParameters(pathParams, queryParams);
@@ -122,7 +124,7 @@ function* generateRoute(
     }
   }
 
-  yield* generateRouteWithParameters({
+  return yield* generateRouteWithParameters({
     identifier,
     codeFileName,
     baseUrl,

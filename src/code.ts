@@ -20,16 +20,18 @@ export const getRouteKeyCodeLines = (routes: Route[], config: RoutesConfig) => [
   `import { base } from '$app/paths';`,
   `import { joinSegments, routeQuery, routeQueryParam, routeQueryExtra } from '${name}/helpers';`,
   '',
-  ...genBaseRoute(routes[0], config),
+  ...genBaseRoute(routes, config),
   ...routesCode(routes, config),
 ];
 
-const genBaseRoute = (route: Route, config: RoutesConfig) =>
+const genBaseRoute = (routes: Route[], config: RoutesConfig) =>
   generateRoutes(
-    [route],
+    routes,
     config,
     function* ({ baseUrl }) {
       yield `const route = ${buildRoute(baseUrl)};`;
+
+      return 'stop';
     },
     (param) => (param.multi ? `\${joinSegments(${param.name})}` : `\${${param.name}}`),
     function* ({ baseUrl, parameters }) {
@@ -47,6 +49,8 @@ const genBaseRoute = (route: Route, config: RoutesConfig) =>
 
         yield parts.join('');
       }
+
+      return 'stop';
     },
   );
 
