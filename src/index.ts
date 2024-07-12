@@ -1,19 +1,22 @@
 import debounce from 'just-debounce';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
 import { name } from '../package.json' with { type: 'json' };
 import { getIndexCodeLines, getRouteKeyCodeLines } from './code.js';
 import { getDeclarationFileContentLines } from './declaration.js';
 import { getFilesOfDir } from './readdir.js';
-import { getRouteId, isPageFile, isServerEndpointFile, resolveRouteInfo } from './resolve.js';
+import {
+  getRouteId,
+  isPageFile,
+  isPageServerFile,
+  isServerEndpointFile,
+  resolveRouteInfo,
+} from './resolve.js';
 import type { AllRoutesMeta, Config, Route } from './types.js';
 import { isDebug, joinLines } from './utils.js';
 
 const MODULE_ID = '\0sveltekit_routes';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   moduleName = '$routes',
@@ -78,7 +81,7 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
 
     async buildStart() {
       for await (const file of getFilesOfDir(routesDir)) {
-        if (!isServerEndpointFile(file) && !isPageFile(file)) {
+        if (!isServerEndpointFile(file) && !isPageFile(file) && !isPageServerFile(file)) {
           continue;
         }
 

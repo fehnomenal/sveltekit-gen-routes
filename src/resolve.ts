@@ -8,7 +8,7 @@ export const isServerEndpointFile = (file: string) => /\+server\.(j|t)s$/.test(f
 
 export const isPageFile = (file: string) => /\+page(@.*?)?\.svelte$/.test(file);
 
-const isPageServerFile = (file: string) => /\+page\.server\.(j|t)s$/.test(file);
+export const isPageServerFile = (file: string) => /\+page\.server\.(j|t)s$/.test(file);
 
 export const getRouteId = (routesDir: string, file: string) => relative(routesDir, dirname(file));
 
