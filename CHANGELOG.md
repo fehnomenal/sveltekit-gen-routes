@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 3.0.2
+
+### Patch Changes
+
+- 5f0c429: Handle extra parameters also if no query params are passed
+
 ## 3.0.1
 
 ### Patch Changes
