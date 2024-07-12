@@ -14,6 +14,13 @@ export const getRouteId = (routesDir: string, file: string) => relative(routesDi
 
 const getRouteKey = (routeId: string) => slugify(routeId, { separator: '_' });
 
+const makeValidIdentifier = (name: string) => {
+  if (/^[0-9-]/.test(name)) {
+    return `_${name}`;
+  }
+  return name;
+};
+
 const getRoutePathParams = (routeId: string) => {
   if (/\[\[.+\]\]/.test(routeId)) {
     throw new Error('Optional path parameters not supported yet!');
@@ -21,14 +28,25 @@ const getRoutePathParams = (routeId: string) => {
 
   const pathParams: PathParam[] = [];
 
-  for (const [, param, matcher] of routeId.matchAll(/\[(.+?)(?:=(.+?))?\]/g)) {
+  for (let [rawInUrl, param, matcher] of routeId.matchAll(/\[(.+?)(?:=(.+?))?\]/g)) {
+    let type = 'string';
+    let multi = false;
+
     if (param.startsWith('...')) {
-      pathParams.push({ name: param.slice(3), multi: true });
+      param = param.slice(3);
+      type = 'string | string[]';
+      multi = true;
     } else if (matcher) {
-      pathParams.push({ name: param, matcher });
-    } else {
-      pathParams.push({ name: param });
+      type = `Param_${matcher}`;
     }
+
+    pathParams.push({
+      name: makeValidIdentifier(param),
+      type,
+      rawInUrl,
+      matcher,
+      multi,
+    });
   }
 
   return pathParams;

@@ -9,7 +9,7 @@ export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleN
     function* ({ identifier, codeFileName }) {
       yield `export { ${identifier}, ${identifier}_query } from '${moduleName}/${codeFileName}.js';`;
     },
-    () => '',
+    null,
     function* ({ identifier, codeFileName }) {
       yield `export { ${identifier} } from '${moduleName}/${codeFileName}.js';`;
     },
@@ -35,7 +35,7 @@ const genBaseRoute = (routes: Route[], config: RoutesConfig) =>
     },
     (param) => (param.multi ? `\${joinSegments(${param.name})}` : `\${${param.name}}`),
     function* ({ baseUrl, parameters }) {
-      const pathParams = parameters.filter((p) => p.urlReplaceSearch !== undefined);
+      const pathParams = parameters.filter((p) => p.rawInPath !== undefined);
 
       if (pathParams.length === 0) {
         yield `const route = ${buildRoute(baseUrl)};`;
@@ -71,12 +71,12 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
       yield `export const ${identifier} = ${route};`;
       yield `export const ${identifier}_query = ${buildRouteQuery(route, url)}`;
     },
-    (param) => (param.multi ? `\${joinSegments(${param.name})}` : `\${${param.name}}`),
+    null,
     function* ({ identifier, baseUrl, urlSuffix, parameters }) {
       let route: string;
       const url = baseUrl + (urlSuffix ?? '');
 
-      const pathParams = parameters.filter((p) => p.urlReplaceSearch !== undefined);
+      const pathParams = parameters.filter((p) => p.rawInPath !== undefined);
 
       if (pathParams.length === 0) {
         route = 'route';
@@ -90,9 +90,7 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
 
       const parts = [`export const ${identifier} = (`];
 
-      const explicitQueryParamNames = parameters
-        .filter((p) => p.urlReplaceSearch === undefined)
-        .map((p) => p.name);
+      const explicitQueryParamNames = parameters.filter((p) => p.rawInPath === undefined).map((p) => p.name);
 
       if (parameters.length === 1) {
         parts.push(parameters[0].name);

@@ -21,27 +21,12 @@ export const normalizeParameters = (
 ): NormalizedParameter[] => {
   const params: NormalizedParameter[] = [];
 
-  for (const { name, matcher, multi } of pathParams) {
-    let type = 'string';
-    let urlReplaceSearch = `[${name}]`;
-
-    if (matcher) {
-      type = `Param_${matcher}`;
-      urlReplaceSearch = `[${name}=${matcher}]`;
-    }
-
-    if (multi) {
-      type = `string | ${type}[]`;
-      urlReplaceSearch = `[...${name}]`;
-    }
-
-    params.push({ name, type, multi: multi ?? false, required: true, urlReplaceSearch });
+  for (const p of pathParams) {
+    params.push({ ...p, required: true, rawInPath: p.rawInUrl });
   }
 
-  if (queryParams) {
-    for (const [name, { type, required }] of queryParams) {
-      params.push({ name, type, multi: false, required: required ?? false });
-    }
+  for (const [name, { type, required }] of queryParams) {
+    params.push({ name, type, multi: false, required: required ?? false });
   }
 
   return params;

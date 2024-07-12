@@ -1,7 +1,9 @@
 export type PathParam = {
   name: string;
-  matcher?: string;
-  multi?: boolean;
+  type: string;
+  rawInUrl: string;
+  matcher: string;
+  multi: boolean;
 };
 
 type BaseRoute = {
@@ -38,7 +40,7 @@ export type NormalizedParameter = {
   type: string;
   multi: boolean;
   required: boolean;
-  urlReplaceSearch?: string;
+  rawInPath?: string;
 };
 
 export type AllRoutesMeta = {

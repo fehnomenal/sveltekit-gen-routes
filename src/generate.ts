@@ -16,7 +16,7 @@ export function* generateRoutes(
   routes: Route[],
   config: RoutesConfig,
   generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string, 'stop' | void>,
-  getUrlReplacementString: (param: NormalizedParameter) => string,
+  getUrlReplacementString: ((param: NormalizedParameter) => string) | null,
   generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string, 'stop' | void>,
 ) {
   for (const route of flattenRoutes(routes, config)) {
@@ -101,7 +101,7 @@ export const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute
 function* generateRoute(
   route: FinalRoute,
   generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string, 'stop' | void>,
-  getUrlReplacementString: (param: NormalizedParameter) => string,
+  getUrlReplacementString: ((param: NormalizedParameter) => string) | null,
   generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string, 'stop' | void>,
 ) {
   let { type, key, codeFileName, baseUrl, urlSuffix, pathParams, queryParams } = route;
@@ -118,9 +118,11 @@ function* generateRoute(
 
   const parameters = normalizeParameters(pathParams, queryParams);
 
-  for (const param of parameters) {
-    if (param.urlReplaceSearch) {
-      baseUrl = baseUrl.replace(param.urlReplaceSearch, getUrlReplacementString(param));
+  if (getUrlReplacementString) {
+    for (const param of parameters) {
+      if (param.rawInPath) {
+        baseUrl = baseUrl.replace(param.rawInPath, getUrlReplacementString(param));
+      }
     }
   }
 
