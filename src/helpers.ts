@@ -33,6 +33,7 @@ const createSearch = (params: QueryParams, char?: string) => {
   } else if (params) {
     return createSearchFromObject(params, char);
   }
+
   return '';
 };
 
@@ -41,14 +42,17 @@ const createSearchExtra = (
   extra: Record<string, string | string[] | undefined>,
   char?: string,
 ) => {
+  const extraEntries = Object.entries(extra);
+
   if (Array.isArray(params)) {
-    return createSearchFromArray([...params, ...Object.entries(extra)], char);
+    return createSearchFromArray([...params, ...extraEntries], char);
   } else if (params instanceof URLSearchParams) {
-    return createSearchFromArray([...params.entries(), ...Object.entries(extra)], char);
+    return createSearchFromArray([...params.entries(), ...extraEntries], char);
   } else if (params) {
-    return createSearchFromArray([...Object.entries(params), ...Object.entries(extra)], char);
+    return createSearchFromArray([...Object.entries(params), ...extraEntries], char);
   }
-  return '';
+
+  return createSearchFromArray(extraEntries, char);
 };
 
 export const routeQuery = (url: string, char?: string) => (q: QueryParams) => url + createSearch(q, char);
