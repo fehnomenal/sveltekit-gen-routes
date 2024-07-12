@@ -6,7 +6,7 @@ import type { ActionRoute, PageRoute, PathParam, Route, ServerRoute } from './ty
 
 export const isServerEndpointFile = (file: string) => /\+server\.(j|t)s$/.test(file);
 
-export const isPageFile = (file: string) => /\+page(@.*?)?\.svelte$/.test(file);
+export const isPageFile = (file: string) => /\+page((@.*?)?\.svelte|\.(j|t)s)$/.test(file);
 
 export const isPageServerFile = (file: string) => /\+page\.server\.(j|t)s$/.test(file);
 
