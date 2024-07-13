@@ -1,5 +1,18 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 3.1.0
+
+### Minor Changes
+
+- 69b291d: Allow omitting an object for only optional parameters
+
+### Patch Changes
+
+- a9eaacf: Also handle action only routes
+- e0d3303: Generate base route only once
+- ec06547: Correctly handle rest path parameters and parameters with invalid names
+- 7ba5d79: Also handle routes without `+page.svelte`
+
 ## 3.0.2
 
 ### Patch Changes
