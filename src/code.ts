@@ -98,6 +98,11 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
         parts.push('{ ');
         parts.push(parameters.map((p) => p.name).join(', '));
         parts.push(' }');
+
+        const anyRequired = parameters.some((p) => p.required);
+        if (!anyRequired) {
+          parts.push(' = {}');
+        }
       }
 
       parts.push(`, ${EXTRA_QUERY_PARAM_NAME}) => `);

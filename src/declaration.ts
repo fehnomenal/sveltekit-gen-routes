@@ -63,7 +63,14 @@ const routeDecls = (routes: Route[], config: RoutesConfig) =>
       if (parameters.length === 1) {
         yield `  ${paramToString(parameters[0])},`;
       } else {
-        yield `  params: {`;
+        const anyRequired = parameters.some((p) => p.required);
+
+        if (anyRequired) {
+          yield `  params: {`;
+        } else {
+          yield `  params?: {`;
+        }
+
         for (const param of parameters) {
           yield `    ${paramToString(param)},`;
         }
