@@ -1,5 +1,5 @@
 import { readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve } from 'node:path/posix';
 
 export async function* getFilesOfDir(dir: string): AsyncGenerator<string> {
   const dirents = readdirSync(dir, { withFileTypes: true });

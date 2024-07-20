@@ -1,6 +1,6 @@
 import slugify from '@sindresorhus/slugify';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path/posix';
 import ts, { type Identifier } from 'typescript';
 import type { ActionRoute, PageRoute, PathParam, Route, ServerRoute } from './types.js';
 
@@ -23,7 +23,7 @@ const makeValidIdentifier = (name: string) => {
 
 const getRoutePathParams = (routeId: string) => {
   if (/\[\[.+\]\]/.test(routeId)) {
-    throw new Error('Optional path parameters not supported yet!');
+    throw new Error('Optional path parameters are not supported yet!');
   }
 
   const pathParams: PathParam[] = [];

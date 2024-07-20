@@ -1,6 +1,7 @@
 import debounce from 'just-debounce';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { platform } from 'node:os';
+import { dirname, join, resolve } from 'node:path/posix';
 import type { Plugin } from 'vite';
 import { name } from '../package.json' with { type: 'json' };
 import { getIndexCodeLines, getRouteKeyCodeLines } from './code.js';
@@ -20,9 +21,9 @@ const MODULE_ID = '\0sveltekit_routes';
 
 export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   moduleName = '$routes',
-  routesDir = './src/routes',
-  paramMatchersDir = './src/params',
-  outputDir = './src',
+  routesDir = join('.', 'src', 'routes'),
+  paramMatchersDir = join('.', 'src', 'params'),
+  outputDir = join('.', 'src'),
 
   debug,
   ...routesConfig
@@ -40,6 +41,18 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   paramMatchersDir = resolve(paramMatchersDir);
   outputDir = resolve(outputDir);
 
+  const normalizeFile =
+    platform() === 'win32'
+      ? (file: string) => {
+          // Remove the leading drive letter.
+          const idx = file.indexOf(':');
+          if (idx > -1) {
+            file = file.slice(idx + 1);
+          }
+          return file;
+        }
+      : (file: string) => file;
+
   const writeDeclarationFile = (lines: string[]) =>
     writeFileSync(resolve(outputDir, `${moduleName}.d.ts`), joinLines(lines));
   const writeDeclarationFileDebounced = debounce(writeDeclarationFile, 100);
@@ -55,6 +68,8 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
     },
 
     async watchChange(id, change) {
+      id = normalizeFile(id);
+
       if (!id.startsWith(routesDir)) {
         return;
       }
@@ -85,13 +100,14 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
           continue;
         }
 
-        const id = await this.resolve(file, undefined, { skipSelf: true });
+        const resolved = await this.resolve(file, undefined, { skipSelf: true });
 
-        if (!id || !id.id.startsWith(routesDir)) {
+        let id: string;
+        if (!resolved || !(id = normalizeFile(resolved.id)).startsWith(routesDir)) {
           continue;
         }
 
-        resolveRouteInfo(routesDir, id.id, routes);
+        resolveRouteInfo(routesDir, id, routes);
       }
 
       latestUpdate = Date.now();
