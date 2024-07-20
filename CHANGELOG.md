@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 3.1.1
+
+### Patch Changes
+
+- 6ac58bc: Correctly handle paths on windows
+
 ## 3.1.0
 
 ### Minor Changes
