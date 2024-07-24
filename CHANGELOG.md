@@ -1,5 +1,18 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.0.0
+
+### Major Changes
+
+- 4cb3638: Do not generate urls with trailing slash
+- 4cb3638: Generate root routes under key '\_ROOT'
+
+  BREAKING: This changes the exported constant and function names.
+
+### Minor Changes
+
+- 4cb3638: Enhance route typings
+
 ## 3.1.1
 
 ### Patch Changes
