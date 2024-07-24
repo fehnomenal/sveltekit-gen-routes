@@ -1,24 +1,34 @@
-import { name } from '../package.json' with { type: 'json' };
+import { name } from '../../package.json';
 import { generateRoutes } from './generate.js';
+import {
+  joinSegmentsName,
+  routeQueryExtraName,
+  routeQueryName,
+  routeQueryParamName,
+} from './helpers.macro.js' with { type: 'macro' };
 import type { Route, RoutesConfig } from './types.js';
+import { baseUrlString, getInSourceHelpersModulePath } from './utils';
 
 export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleName: string) => [
   ...generateRoutes(
     routes,
     config,
     function* ({ identifier, codeFileName }) {
-      yield `export { ${identifier}, ${identifier}_query } from '${moduleName}/${codeFileName}.js';`;
+      yield `export { ${identifier}, ${identifier}_query } from './${moduleName}/${codeFileName}.js';`;
     },
     null,
     function* ({ identifier, codeFileName }) {
-      yield `export { ${identifier} } from '${moduleName}/${codeFileName}.js';`;
+      yield `export { ${identifier} } from './${moduleName}/${codeFileName}.js';`;
     },
   ),
 ];
 
+const helpersModule =
+  process.env.NODE_ENV === 'production' ? `${name}/helpers` : getInSourceHelpersModulePath();
+
 export const getRouteKeyCodeLines = (routes: Route[], config: RoutesConfig) => [
   `import { base } from '$app/paths';`,
-  `import { joinSegments, routeQuery, routeQueryParam, routeQueryExtra } from '${name}/helpers';`,
+  `import { ${joinSegmentsName()}, ${routeQueryName()}, ${routeQueryParamName()}, ${routeQueryExtraName()} } from '${helpersModule}';`,
   '',
   ...genBaseRoute(routes, config),
   ...routesCode(routes, config),
@@ -29,23 +39,25 @@ const genBaseRoute = (routes: Route[], config: RoutesConfig) =>
     routes,
     config,
     function* ({ baseUrl }) {
-      yield `const route = ${buildRoute(baseUrl)};`;
+      yield `const route = \`${baseUrlString('base', baseUrl)}\`;`;
 
       return 'stop';
     },
-    (param) => (param.multi ? `\${joinSegments(${param.name})}` : `\${${param.name}}`),
-    function* ({ baseUrl, parameters }) {
-      const pathParams = parameters.filter((p) => p.rawInPath !== undefined);
-
+    ({ param, pathParams, queryParams }) =>
+      param.multi
+        ? `\${${joinSegmentsName()}(${param.name})${pathParams.length + queryParams.length === 1 ? ` || '/'` : ''}}`
+        : `\${${param.name}}`,
+    function* ({ baseUrl, pathParams }) {
       if (pathParams.length === 0) {
-        yield `const route = ${buildRoute(baseUrl)};`;
+        yield `const route = \`${baseUrlString('base', baseUrl)}\`;`;
       } else {
         const parts = [`const route = (`];
 
         parts.push(pathParams.map((p) => p.name).join(', '));
 
-        parts.push(') => ');
-        parts.push(buildRoute(baseUrl));
+        parts.push(') => `');
+        parts.push(baseUrlString('base', baseUrl));
+        parts.push('`');
 
         yield parts.join('');
       }
@@ -72,11 +84,9 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
       yield `export const ${identifier}_query = ${buildRouteQuery(route, url)}`;
     },
     null,
-    function* ({ identifier, baseUrl, urlSuffix, parameters }) {
+    function* ({ identifier, baseUrl, urlSuffix, pathParams, queryParams }) {
       let route: string;
       const url = baseUrl + (urlSuffix ?? '');
-
-      const pathParams = parameters.filter((p) => p.rawInPath !== undefined);
 
       if (pathParams.length === 0) {
         route = 'route';
@@ -90,16 +100,19 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
 
       const parts = [`export const ${identifier} = (`];
 
-      const explicitQueryParamNames = parameters.filter((p) => p.rawInPath === undefined).map((p) => p.name);
+      const pathParamNames = pathParams.map((p) => p.name);
+      const queryParamNames = queryParams.map(([name]) => name);
+      const paramNames = [...pathParamNames, ...queryParamNames];
 
-      if (parameters.length === 1) {
-        parts.push(parameters[0].name);
+      if (pathParams.length + queryParams.length === 1) {
+        const [paramName] = paramNames;
+        parts.push(paramName!);
       } else {
         parts.push('{ ');
-        parts.push(parameters.map((p) => p.name).join(', '));
+        parts.push(paramNames.join(', '));
         parts.push(' }');
 
-        const anyRequired = parameters.some((p) => p.required);
+        const anyRequired = pathParams.length > 0 || queryParams.some(([, p]) => p.required);
         if (!anyRequired) {
           parts.push(' = {}');
         }
@@ -107,10 +120,10 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
 
       parts.push(`, ${EXTRA_QUERY_PARAM_NAME}) => `);
 
-      if (explicitQueryParamNames.length === 0) {
+      if (queryParams.length === 0) {
         parts.push(buildRouteQueryParam(route, url));
       } else {
-        parts.push(buildRouteQueryExtra(route, url, explicitQueryParamNames));
+        parts.push(buildRouteQueryExtra(route, url, queryParamNames));
       }
 
       yield parts.join('');
@@ -119,16 +132,15 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
 
 const EXTRA_QUERY_PARAM_NAME = 'q';
 
-const buildRoute = (url: string) => `\`\${base}/${url}\``;
-
-const buildRouteQuery = (route: string, url: string) => routeCall('routeQuery', route, querySepCharArg(url));
+const buildRouteQuery = (route: string, url: string) =>
+  routeCall(routeQueryName(), route, querySepCharArg(url));
 
 const buildRouteQueryParam = (route: string, url: string) =>
-  routeCall('routeQueryParam', route, EXTRA_QUERY_PARAM_NAME, querySepCharArg(url));
+  routeCall(routeQueryParamName(), route, EXTRA_QUERY_PARAM_NAME, querySepCharArg(url));
 
 const buildRouteQueryExtra = (route: string, url: string, explicitQueryParamNames: string[]) =>
   routeCall(
-    'routeQueryExtra',
+    routeQueryExtraName(),
     route,
     EXTRA_QUERY_PARAM_NAME,
     `{ ${explicitQueryParamNames.join(', ')} }`,

@@ -1,5 +1,5 @@
-import type { NormalizedParameter, PathParam, QueryParamConfig, Route, RoutesConfig } from './types.js';
-import { getStrippedUrl, normalizeParameters, sortRoutes } from './utils.js';
+import type { PathParameter, QueryParamConfig, Route, RoutesConfig } from './types.js';
+import { getStrippedUrl, sortRoutes } from './utils.js';
 
 type GeneratorParams = {
   identifier: string;
@@ -9,15 +9,24 @@ type GeneratorParams = {
 };
 
 type GeneratorParamsWithParams = GeneratorParams & {
-  parameters: NormalizedParameter[];
+  pathParams: PathParameter[];
+  queryParams: [string, QueryParamConfig][];
 };
+
+type RouteGenerator<Params extends GeneratorParams> = (p: Params) => Generator<string, 'stop' | void>;
+
+type PathParameterStringReplacer = (args: {
+  param: PathParameter;
+  pathParams: PathParameter[];
+  queryParams: [string, QueryParamConfig][];
+}) => string;
 
 export function* generateRoutes(
   routes: Route[],
   config: RoutesConfig,
-  generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string, 'stop' | void>,
-  getUrlReplacementString: ((param: NormalizedParameter) => string) | null,
-  generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string, 'stop' | void>,
+  generateRouteWithoutParameters: RouteGenerator<GeneratorParams>,
+  getUrlReplacementString: PathParameterStringReplacer | null,
+  generateRouteWithParameters: RouteGenerator<GeneratorParamsWithParams>,
 ) {
   for (const route of flattenRoutes(routes, config)) {
     const maybeStop = yield* generateRoute(
@@ -40,7 +49,7 @@ type FinalRoute = {
   key: string;
   baseUrl: string;
   urlSuffix?: string;
-  pathParams: PathParam[];
+  pathParams: PathParameter[];
   queryParams: [string, QueryParamConfig][];
 };
 
@@ -100,14 +109,16 @@ export const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute
 
 function* generateRoute(
   route: FinalRoute,
-  generateRouteWithoutParameters: (p: GeneratorParams) => Generator<string, 'stop' | void>,
-  getUrlReplacementString: ((param: NormalizedParameter) => string) | null,
-  generateRouteWithParameters: (p: GeneratorParamsWithParams) => Generator<string, 'stop' | void>,
+  generateRouteWithoutParameters: RouteGenerator<GeneratorParams>,
+  getUrlReplacementString: PathParameterStringReplacer | null,
+  generateRouteWithParameters: RouteGenerator<GeneratorParamsWithParams>,
 ) {
   let { type, key, codeFileName, baseUrl, urlSuffix, pathParams, queryParams } = route;
   const identifier = `${type}_${key}`;
 
-  if (pathParams.length === 0 && queryParams.length === 0) {
+  const paramCount = pathParams.length + queryParams.length;
+
+  if (paramCount === 0) {
     return yield* generateRouteWithoutParameters({
       identifier,
       codeFileName,
@@ -116,13 +127,19 @@ function* generateRoute(
     });
   }
 
-  const parameters = normalizeParameters(pathParams, queryParams);
-
   if (getUrlReplacementString) {
-    for (const param of parameters) {
-      if (param.rawInPath) {
-        baseUrl = baseUrl.replace(param.rawInPath, getUrlReplacementString(param));
-      }
+    for (const param of pathParams) {
+      // For multi parameters also replace the leading slash. When there are values to join it will
+      // be added again later.
+      const searchValue = param.multi ? `/${param.rawInRoute}` : param.rawInRoute;
+
+      const replaceValue = getUrlReplacementString({
+        param,
+        pathParams,
+        queryParams,
+      });
+
+      baseUrl = baseUrl.replace(searchValue, replaceValue);
     }
   }
 
@@ -131,6 +148,7 @@ function* generateRoute(
     codeFileName,
     baseUrl,
     urlSuffix,
-    parameters,
+    pathParams,
+    queryParams,
   });
 }

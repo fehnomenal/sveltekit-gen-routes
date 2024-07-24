@@ -67,4 +67,9 @@ export const routeQueryExtra = (
 ) => url + createSearchExtra(q, extra, char);
 
 export const joinSegments = (segments: string | string[]) =>
-  typeof segments === 'string' ? segments : segments.join('/');
+  segments
+    ? [segments]
+        .flat()
+        .map((s) => `/${s}`)
+        .join('')
+    : '';

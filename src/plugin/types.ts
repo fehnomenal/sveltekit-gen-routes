@@ -1,15 +1,15 @@
-export type PathParam = {
+export type PathParameter = {
   name: string;
   type: string;
-  rawInUrl: string;
-  matcher: string;
+  rawInRoute: string;
+  matcher: string | undefined;
   multi: boolean;
 };
 
 type BaseRoute = {
   routeId: string;
   key: string;
-  pathParams: PathParam[];
+  pathParams: PathParameter[];
 };
 
 export type ServerRoute = BaseRoute & {
@@ -33,14 +33,6 @@ export type QueryParams = Record<string, QueryParamConfig>;
 export type QueryParamConfig = {
   type: string;
   required?: boolean;
-};
-
-export type NormalizedParameter = {
-  name: string;
-  type: string;
-  multi: boolean;
-  required: boolean;
-  rawInPath?: string;
 };
 
 export type AllRoutesMeta = {

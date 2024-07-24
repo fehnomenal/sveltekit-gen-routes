@@ -1,4 +1,3 @@
-// @ts-expect-error
 import type { base } from '$app/paths';
 
 export type Base = typeof base;

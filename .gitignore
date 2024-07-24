@@ -1,2 +1,5 @@
+.svelte-kit/
 dist/
 node_modules/
+$routes*
+!$routes.d.ts
