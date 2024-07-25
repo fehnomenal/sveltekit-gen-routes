@@ -25,7 +25,7 @@ declare module '$routes' {
     queryParams?: QueryParams,
   ): `${Base}/${typeof one}${string /* queryParams */}`;
 
-  export function PAGE_params_one_two_int(
+;;;  export function PAGE_params_one_two_int(
     params: {
       one: string,
       two: Param_int,
