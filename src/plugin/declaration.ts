@@ -39,7 +39,10 @@ function* preludeDecls(declarationFilePath: string, paramMatchersDir: string, ro
   for (const matcher of matchers) {
     yield `type Param_${matcher} = ParamOfMatcher<typeof import('./${paramMatcherModulePrefix}/${matcher}.js').match>;`;
   }
-  yield '';
+
+  if (matchers.length > 0) {
+    yield '';
+  }
 }
 
 const routeDecls = (routes: Route[], config: RoutesConfig) =>
