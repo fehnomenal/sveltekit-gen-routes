@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "build:code": "bun build --define process.env.NODE_ENV=\"'production'\" --target=node --outdir=dist --minify --splitting -e typescript -e vite src/plugin/index.ts src/plugin/helpers.ts",
+    "build:code": "bun build --define process.env.NODE_ENV=\"'production'\" --target=node --outdir=dist --splitting -e typescript -e vite src/plugin/index.ts src/plugin/helpers.ts",
     "build:declarations": "tsc --project tsconfig.plugin.json",
     "build": "rm -rf dist && bun run build:code && bun run build:declarations",
     "dev": "vite dev",
@@ -25,10 +25,12 @@
     "check": "svelte-check --tsconfig tsconfig.json",
     "format": "prettier -w src",
     "changeset": "changeset",
-    "version": "changeset version"
+    "version": "changeset version",
+    "publish": "bun run build && publish-git"
   },
   "devDependencies": {
     "@changesets/cli": "2.27.1",
+    "@fehnomenal/git-publisher": "github:fehnomenal/git-publisher#v1.0.2",
     "@sindresorhus/slugify": "2.2.1",
     "@sveltejs/kit": "2.5.18",
     "@testing-library/svelte": "5.2.0",
