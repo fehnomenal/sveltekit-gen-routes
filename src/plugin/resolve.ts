@@ -1,16 +1,14 @@
 import slugify from '@sindresorhus/slugify';
-import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import ts, { type Identifier } from 'typescript';
 import { normalizePath } from 'vite';
 import type { ActionRoute, PageRoute, PathParameter, Route, ServerRoute } from './types.js';
 
-export const isServerEndpointFile = (file: string) => /\+server\.(js|ts)$/.test(file);
+const isServerEndpointFile = (file: string) => /\+server\.(js|ts)$/.test(file);
 
-export const isPageFile = (file: string) =>
-  /\+page(@.*?)?\.svelte$/.test(file) || /\+page\.(js|ts)$/.test(file);
+const isPageFile = (file: string) => /\+page(@.*?)?\.svelte$/.test(file) || /\+page\.(js|ts)$/.test(file);
 
-export const isPageServerFile = (file: string) => /\+page\.server\.(js|ts)$/.test(file);
+const isPageServerFile = (file: string) => /\+page\.server\.(js|ts)$/.test(file);
 
 export const getRouteId = (routesDirRelativePath: string) =>
   // Prepending the slash here correctly handles `dirname('/')` and thus root routes.
@@ -60,11 +58,30 @@ const getRoutePathParams = (routeId: string) => {
   return pathParams;
 };
 
-export const resolveRouteInfo = (routeId: string, file: string, routes: Route[]) => {
+export const getRouteTypeFromFileName = (fileName: string): Route['type'] | null => {
+  if (isServerEndpointFile(fileName)) {
+    return 'SERVER';
+  }
+
+  if (isPageFile(fileName)) {
+    return 'PAGE';
+  }
+
+  if (isPageServerFile(fileName)) {
+    return 'ACTION';
+  }
+
+  return null;
+};
+
+export const resolveRouteInfo = (
+  routeId: string,
+  type: Route['type'],
+  getSource: () => string,
+  routes: Route[],
+) => {
   const key = getRouteKey(routeId);
   const pathParams = getRoutePathParams(routeId);
-
-  const getSource = () => readFileSync(file, { encoding: 'utf-8' });
 
   function getExisting(type: 'SERVER'): ServerRoute | undefined;
   function getExisting(type: 'PAGE'): PageRoute | undefined;
@@ -73,11 +90,11 @@ export const resolveRouteInfo = (routeId: string, file: string, routes: Route[])
     return routes.find((r) => r.type === type && r.routeId === routeId);
   }
 
-  if (isServerEndpointFile(file)) {
-    let route = getExisting('SERVER');
+  if (type === 'SERVER') {
+    let route = getExisting(type);
     if (!route) {
       route = {
-        type: 'SERVER',
+        type,
         routeId,
         key,
         pathParams,
@@ -89,11 +106,11 @@ export const resolveRouteInfo = (routeId: string, file: string, routes: Route[])
     route.methods = extractMethodsFromServerEndpointCode(getSource()).sort();
   }
 
-  if (isPageFile(file)) {
-    let route = getExisting('PAGE');
+  if (type === 'PAGE') {
+    let route = getExisting(type);
     if (!route) {
       route = {
-        type: 'PAGE',
+        type,
         routeId,
         key,
         pathParams,
@@ -102,11 +119,11 @@ export const resolveRouteInfo = (routeId: string, file: string, routes: Route[])
     }
   }
 
-  if (isPageServerFile(file)) {
-    let route = getExisting('ACTION');
+  if (type === 'ACTION') {
+    let route = getExisting(type);
     if (!route) {
       route = {
-        type: 'ACTION',
+        type,
         routeId,
         key,
         pathParams,
