@@ -7,7 +7,7 @@ import {
   routeQueryParamName,
 } from './helpers.macro.js' with { type: 'macro' };
 import type { Route, RoutesConfig } from './types.js';
-import { baseUrlString, getInSourceHelpersModulePath } from './utils';
+import { baseUrlString, getInSourceHelpersModulePath, replacePathParams } from './utils';
 
 export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleName: string) => [
   ...generateRoutes(
@@ -16,7 +16,6 @@ export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleN
     function* ({ identifier, codeFileName }) {
       yield `export { ${identifier}, ${identifier}_query } from './${moduleName}/${codeFileName}.js';`;
     },
-    null,
     function* ({ identifier, codeFileName }) {
       yield `export { ${identifier} } from './${moduleName}/${codeFileName}.js';`;
     },
@@ -43,11 +42,13 @@ const genBaseRoute = (routes: Route[], config: RoutesConfig) =>
 
       return 'stop';
     },
-    ({ param, pathParams, queryParams }) =>
-      param.multi
-        ? `\${${joinSegmentsName()}(${param.name})${pathParams.length + queryParams.length === 1 ? ` || '/'` : ''}}`
-        : `\${${param.name}}`,
-    function* ({ baseUrl, pathParams }) {
+    function* ({ baseUrl, pathParams, queryParams }) {
+      baseUrl = replacePathParams(baseUrl, pathParams, (param) =>
+        param.multi
+          ? `\${${joinSegmentsName()}(${param.name})${pathParams.length + queryParams.length === 1 ? ` || '/'` : ''}}`
+          : `\${${param.name}}`,
+      );
+
       if (pathParams.length === 0) {
         yield `const route = \`${baseUrlString('base', baseUrl)}\`;`;
       } else {
@@ -83,7 +84,6 @@ const routesCode = (routes: Route[], config: RoutesConfig) =>
       yield `export const ${identifier} = ${route};`;
       yield `export const ${identifier}_query = ${buildRouteQuery(route, url)}`;
     },
-    null,
     function* ({ identifier, baseUrl, urlSuffix, pathParams, queryParams }) {
       let route: string;
       const url = baseUrl + (urlSuffix ?? '');

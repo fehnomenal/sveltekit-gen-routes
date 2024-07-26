@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { isAbsolute, relative, sep } from 'node:path';
 import { normalizePath } from 'vite';
-import type { Config, DebugKey, Route } from './types.js';
+import type { Config, DebugKey, PathParameter, Route } from './types.js';
 
 export const sortRoutes = (routes: Route[]) =>
   [
@@ -39,4 +39,20 @@ export const makeRelativePath = (from: string, to: string) => {
 export const isInSubdir = (parent: string, dir: string) => {
   const rel = relative(parent, dir);
   return rel.length > 0 && !rel.startsWith('..') && !isAbsolute(rel);
+};
+
+export const replacePathParams = (
+  url: string,
+  pathParams: PathParameter[],
+  replaceValue: (param: PathParameter) => string,
+) => {
+  for (const param of pathParams) {
+    // For multi parameters also replace the leading slash. When there are values to join it will
+    // be added again later.
+    const searchValue = param.multi ? `/${param.rawInRoute}` : param.rawInRoute;
+
+    url = url.replace(searchValue, replaceValue(param));
+  }
+
+  return url;
 };

@@ -3,7 +3,7 @@ import { normalizePath } from 'vite';
 import { name } from '../../package.json';
 import { flattenRoutes, generateRoutes } from './generate.js';
 import type { PathParameter, QueryParamConfig, Route, RoutesConfig } from './types.js';
-import { baseUrlString } from './utils';
+import { baseUrlString, replacePathParams } from './utils';
 
 export const getDeclarationFileContentLines = (
   moduleName: string,
@@ -57,11 +57,13 @@ const routeDecls = (routes: Route[], config: RoutesConfig) =>
       yield `  queryParams: QueryParams,`;
       yield `): \`${baseUrlString('Base', url)}\${string /* queryParams */}\`;`;
     },
-    ({ param, pathParams, queryParams }) =>
-      param.multi
-        ? `\${string /* ${param.name} */}`
-        : `\${typeof ${pathParams.length + queryParams.length > 1 ? 'params.' : ''}${param.name}}`,
     function* ({ identifier, baseUrl, urlSuffix, pathParams, queryParams }) {
+      baseUrl = replacePathParams(baseUrl, pathParams, (param) =>
+        param.multi
+          ? `\${string /* ${param.name} */}`
+          : `\${typeof ${pathParams.length + queryParams.length > 1 ? 'params.' : ''}${param.name}}`,
+      );
+
       const url = baseUrl + (urlSuffix ?? '');
 
       const pathParamsStringified = pathParams.map(pathParamToString);
