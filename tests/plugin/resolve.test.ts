@@ -1,6 +1,6 @@
 import { describe } from 'vitest';
-import { getRouteId, resolveRouteInfo } from './resolve.js';
-import type { Route } from './types.js';
+import { getRouteId, resolveRouteInfo } from '../../src/plugin/resolve.js';
+import type { Route } from '../../src/plugin/types.js';
 
 describe('route id', (test) => {
   test('root', ({ expect }) => {

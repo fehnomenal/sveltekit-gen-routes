@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { test } from 'vitest';
-import Page from './+page.svelte';
+import Page from '../../../../src/routes/groups/(group)/+page.svelte';
 
 test('page', ({ expect }) => {
   render(Page);
