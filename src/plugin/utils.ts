@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { isAbsolute, relative, sep } from 'node:path';
 import { normalizePath } from 'vite';
-import type { Config, DebugKey, PathParameter, Route } from './types.js';
+import type { ActionRoute, Config, DebugKey, PathParameter, Route, ServerRoute } from './types.js';
 
 export const sortRoutes = (routes: Route[]) =>
   [
@@ -12,7 +12,7 @@ export const sortRoutes = (routes: Route[]) =>
     .map((routes) => routes.sort((a, b) => a.key.localeCompare(b.key)))
     .flat();
 
-export const getStrippedUrl = (routeId: string) =>
+export const normalizeUrl = (routeId: string) =>
   routeId.replaceAll(/\([^/]+?\)/g, '').replaceAll(/\/{2,}/g, '/');
 
 export const baseUrlString = (baseName: string, url: string) =>
@@ -56,3 +56,9 @@ export const replacePathParams = (
 
   return url;
 };
+
+export const getServerRouteKeys = (route: ServerRoute): { key: string; method: string }[] =>
+  route.methods.map((method) => ({ key: `${route.key}_${method}`, method }));
+
+export const getActionRouteKeys = (route: ActionRoute): { key: string; name: string }[] =>
+  route.names.map((name) => ({ key: `${route.key}_${name}`, name }));

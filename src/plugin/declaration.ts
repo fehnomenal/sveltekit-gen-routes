@@ -1,9 +1,9 @@
 import { dirname, relative } from 'node:path';
 import { normalizePath } from 'vite';
 import { name } from '../../package.json';
-import { flattenRoutes, generateRoutes } from './generate.js';
+import { generateRoutes } from './generate.js';
 import type { PathParameter, QueryParamConfig, Route, RoutesConfig } from './types.js';
-import { baseUrlString, replacePathParams } from './utils';
+import { baseUrlString, getActionRouteKeys, getServerRouteKeys, replacePathParams } from './utils';
 
 export const getDeclarationFileContentLines = (
   moduleName: string,
@@ -104,8 +104,23 @@ function* routesMeta(routes: Route[]) {
     ACTION: {},
   };
 
-  for (const { type, key, pathParams } of flattenRoutes(routes, {})) {
-    meta[type][key] = pathParams.length === 0 ? 'never' : pathParams.map((p) => `'${p.name}'`).join(' | ');
+  for (const route of routes) {
+    let keyHolders: { key: string }[];
+
+    if (route.type === 'PAGE') {
+      keyHolders = [{ key: route.key }];
+    } else if (route.type === 'SERVER') {
+      keyHolders = getServerRouteKeys(route);
+    } else if (route.type === 'ACTION') {
+      keyHolders = getActionRouteKeys(route);
+    } else {
+      continue;
+    }
+
+    for (const { key } of keyHolders) {
+      meta[route.type][key] =
+        route.pathParams.length === 0 ? 'never' : route.pathParams.map((p) => `'${p.name}'`).join(' | ');
+    }
   }
 
   yield `export type ROUTES = {`;
@@ -117,7 +132,7 @@ function* routesMeta(routes: Route[]) {
 
     yield `  ${type}S: {`;
 
-    for (const [route, pathParams] of Object.entries(routes)) {
+    for (const [route, pathParams] of Object.entries(routes).sort((a, b) => a[0].localeCompare(b[0]))) {
       yield `    ${route}: ${pathParams};`;
     }
 
