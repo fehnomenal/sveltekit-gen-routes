@@ -52,46 +52,59 @@ const routeDecls = (routes: Route[], config: RoutesConfig) =>
     function* ({ identifier, baseUrl, urlSuffix }) {
       const url = baseUrl + (urlSuffix ?? '');
 
-      yield `export const ${identifier}: \`${baseUrlString('Base', url)}\`;`;
-      yield `export function ${identifier}_query(`;
-      yield `  queryParams: QueryParams,`;
-      yield `): \`${baseUrlString('Base', url)}\${string /* queryParams */}\`;`;
+      yield* generateDeclsForRouteWithoutParams(url, identifier);
     },
     function* ({ identifier, baseUrl, urlSuffix, pathParams, queryParams }) {
-      baseUrl = replacePathParams(baseUrl, pathParams, (param) =>
-        param.multi
-          ? `\${string /* ${param.name} */}`
-          : `\${typeof ${pathParams.length + queryParams.length > 1 ? 'params.' : ''}${param.name}}`,
-      );
-
       const url = baseUrl + (urlSuffix ?? '');
 
-      const pathParamsStringified = pathParams.map(pathParamToString);
-      const queryParamsStringified = queryParams.map(queryParamToString);
-      const paramsStringified = [...pathParamsStringified, ...queryParamsStringified];
-
-      yield `export function ${identifier}(`;
-      if (pathParams.length + queryParams.length === 1) {
-        const [param] = paramsStringified;
-        yield `  ${param},`;
-      } else {
-        const anyRequired = pathParams.length > 0 || queryParams.some(([, p]) => p.required);
-
-        if (anyRequired) {
-          yield `  params: {`;
-        } else {
-          yield `  params?: {`;
-        }
-
-        for (const param of paramsStringified) {
-          yield `    ${param},`;
-        }
-        yield `  },`;
-      }
-      yield `  queryParams?: QueryParams,`;
-      yield `): \`${baseUrlString('Base', url)}\${string /* queryParams */}\`;`;
+      yield* generateDeclsForRouteWithParams(url, identifier, pathParams, queryParams);
     },
   );
+
+export function* generateDeclsForRouteWithoutParams(url: string, routeIdentifier: string) {
+  yield `export const ${routeIdentifier}: \`${baseUrlString('Base', url)}\`;`;
+  yield `export function ${routeIdentifier}_query(`;
+  yield `  queryParams: QueryParams,`;
+  yield `): \`${baseUrlString('Base', url)}\${string /* queryParams */}\`;`;
+}
+
+export function* generateDeclsForRouteWithParams(
+  url: string,
+  routeIdentifier: string,
+  pathParams: PathParameter[],
+  queryParams: [string, QueryParamConfig][],
+) {
+  url = replacePathParams(url, pathParams, (param) =>
+    param.multi
+      ? `\${string /* ${param.name} */}`
+      : `\${typeof ${pathParams.length + queryParams.length > 1 ? 'params.' : ''}${param.name}}`,
+  );
+
+  const pathParamsStringified = pathParams.map(pathParamToString);
+  const queryParamsStringified = queryParams.map(queryParamToString);
+  const paramsStringified = [...pathParamsStringified, ...queryParamsStringified];
+
+  yield `export function ${routeIdentifier}(`;
+  if (pathParams.length + queryParams.length === 1) {
+    const [param] = paramsStringified;
+    yield `  ${param},`;
+  } else {
+    const anyRequired = pathParams.length > 0 || queryParams.some(([, p]) => p.required);
+
+    if (anyRequired) {
+      yield `  params: {`;
+    } else {
+      yield `  params?: {`;
+    }
+
+    for (const param of paramsStringified) {
+      yield `    ${param},`;
+    }
+    yield `  },`;
+  }
+  yield `  queryParams?: QueryParams,`;
+  yield `): \`${baseUrlString('Base', url)}\${string /* queryParams */}\`;`;
+}
 
 const pathParamToString = (param: PathParameter) => [param.name, ': ', param.type].join('');
 const queryParamToString = ([name, param]: [string, QueryParamConfig]) =>

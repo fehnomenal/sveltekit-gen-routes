@@ -46,6 +46,14 @@ describe('resolve route info', (test) => {
       resolveRouteInfo('/users/id=[user_id]', 'PAGE', () => '', routes);
       resolveRouteInfo('/(public_pages)/[...path]', 'PAGE', () => '', routes);
 
+      resolveRouteInfo('/(params)/[one]', 'PAGE', () => '', routes);
+      resolveRouteInfo(
+        '/(params)/[one]/[two=int]/[...more]',
+        'SERVER',
+        () => 'export const GET = () => new Response;',
+        routes,
+      );
+
       expect(routes).toStrictEqual([
         {
           type: 'PAGE',
@@ -88,6 +96,51 @@ describe('resolve route info', (test) => {
               multi: true,
             },
           ],
+        },
+
+        {
+          type: 'PAGE',
+          routeId: '/(params)/[one]',
+          key: 'params_one',
+          pathParams: [
+            {
+              name: 'one',
+              type: 'string',
+              rawInRoute: '[one]',
+              matcher: undefined,
+              multi: false,
+            },
+          ],
+        },
+
+        {
+          type: 'SERVER',
+          routeId: '/(params)/[one]/[two=int]/[...more]',
+          key: 'params_one_two_int_more',
+          pathParams: [
+            {
+              name: 'one',
+              type: 'string',
+              rawInRoute: '[one]',
+              matcher: undefined,
+              multi: false,
+            },
+            {
+              name: 'two',
+              type: 'Param_int',
+              rawInRoute: '[two=int]',
+              matcher: 'int',
+              multi: false,
+            },
+            {
+              name: 'more',
+              type: 'string | string[]',
+              rawInRoute: '[...more]',
+              matcher: undefined,
+              multi: true,
+            },
+          ],
+          methods: ['GET'],
         },
       ]);
 
