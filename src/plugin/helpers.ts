@@ -70,6 +70,7 @@ export const joinSegments = (segments: string | string[]) =>
   segments
     ? [segments]
         .flat()
+        .filter(Boolean)
         .map((s) => `/${s}`)
         .join('')
     : '';

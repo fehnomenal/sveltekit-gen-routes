@@ -33,10 +33,31 @@ declare module '$routes' {
     queryParams?: QueryParams,
   ): `${Base}/${typeof params.one}/${typeof params.two}${string /* queryParams */}`;
 
-  export function PAGE_params_only_rest(
-    only_rest: string | string[],
+  export function PAGE_rest(
+    rest?: string | string[],
     queryParams?: QueryParams,
-  ): `${Base}${string /* only_rest */}${string /* queryParams */}`;
+  ): `${Base}${string /* rest */}${string /* queryParams */}`;
+
+  export function PAGE_rest_more(
+    rest?: string | string[],
+    queryParams?: QueryParams,
+  ): `${Base}${string /* rest */}/more${string /* queryParams */}`;
+
+  export function PAGE_rest_more_param(
+    params: {
+      rest?: string | string[],
+      param: string,
+    },
+    queryParams?: QueryParams,
+  ): `${Base}${string /* params.rest */}/more/${typeof params.param}${string /* queryParams */}`;
+
+  export function PAGE_rest_param(
+    params: {
+      rest?: string | string[],
+      param: string,
+    },
+    queryParams?: QueryParams,
+  ): `${Base}${string /* params.rest */}/${typeof params.param}${string /* queryParams */}`;
 
   export const SERVER__ROOT_HEAD: `${Base}/`;
   export function SERVER__ROOT_HEAD_query(
@@ -47,28 +68,28 @@ declare module '$routes' {
     params: {
       one: string,
       two: Param_int,
-      more: string | string[],
+      more?: string | string[],
     },
     queryParams?: QueryParams,
-  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* more */}${string /* queryParams */}`;
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
   export function SERVER_params_one_two_int_more_POST(
     params: {
       one: string,
       two: Param_int,
-      more: string | string[],
+      more?: string | string[],
     },
     queryParams?: QueryParams,
-  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* more */}${string /* queryParams */}`;
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
   export function SERVER_params_one_two_int_more_PUT(
     params: {
       one: string,
       two: Param_int,
-      more: string | string[],
+      more?: string | string[],
     },
     queryParams?: QueryParams,
-  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* more */}${string /* queryParams */}`;
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
   export const ACTION_groups_group_more_do_that: `${Base}/groups/more?/do_that`;
   export function ACTION_groups_group_more_do_that_query(
@@ -92,7 +113,10 @@ declare module '$routes' {
       groups_group_more: never;
       params_one: 'one';
       params_one_two_int: 'one' | 'two';
-      params_only_rest: 'only_rest';
+      rest: 'rest';
+      rest_more: 'rest';
+      rest_more_param: 'rest' | 'param';
+      rest_param: 'rest' | 'param';
     };
     SERVERS: {
       _ROOT_HEAD: never;

@@ -1,5 +1,12 @@
-import type { PathParameter, QueryParamConfig, Route, RoutesConfig } from './types.js';
-import { getStrippedUrl, sortRoutes } from './utils.js';
+import type {
+  ActionRoute,
+  PathParameter,
+  QueryParamConfig,
+  Route,
+  RoutesConfig,
+  ServerRoute,
+} from './types.js';
+import { getActionRouteKeys, getServerRouteKeys, normalizeUrl, sortRoutes } from './utils.js';
 
 type GeneratorParams = {
   identifier: string;
@@ -15,24 +22,16 @@ type GeneratorParamsWithParams = GeneratorParams & {
 
 type RouteGenerator<Params extends GeneratorParams> = (p: Params) => Generator<string, 'stop' | void>;
 
-type PathParameterStringReplacer = (args: {
-  param: PathParameter;
-  pathParams: PathParameter[];
-  queryParams: [string, QueryParamConfig][];
-}) => string;
-
 export function* generateRoutes(
   routes: Route[],
   config: RoutesConfig,
   generateRouteWithoutParameters: RouteGenerator<GeneratorParams>,
-  getUrlReplacementString: PathParameterStringReplacer | null,
   generateRouteWithParameters: RouteGenerator<GeneratorParamsWithParams>,
 ) {
   for (const route of flattenRoutes(routes, config)) {
     const maybeStop = yield* generateRoute(
       route,
       generateRouteWithoutParameters,
-      getUrlReplacementString,
       generateRouteWithParameters,
     );
     yield '';
@@ -44,103 +43,69 @@ export function* generateRoutes(
 }
 
 type FinalRoute = {
-  type: Route['type'];
+  identifier: string;
   codeFileName: string;
-  key: string;
   baseUrl: string;
   urlSuffix?: string;
   pathParams: PathParameter[];
   queryParams: [string, QueryParamConfig][];
 };
 
-export const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute[] => {
+const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute[] => {
   const finalRoutes: FinalRoute[] = [];
 
   for (const route of sortRoutes(routes)) {
-    const strippedUrl = getStrippedUrl(route.routeId);
-
     if (route.type === 'PAGE') {
       finalRoutes.push({
-        type: route.type,
+        identifier: `${route.type}_${route.key}`,
         codeFileName: route.key,
-        key: route.key,
-        baseUrl: strippedUrl,
+        baseUrl: normalizeUrl(route.routeId),
         pathParams: route.pathParams,
         queryParams: Object.entries(config.PAGES?.[route.key]?.explicitQueryParams ?? {}),
       });
     } else if (route.type === 'SERVER' && route.methods.length > 0) {
-      finalRoutes.push(
-        ...route.methods.map(
-          (method) =>
-            ({
-              type: route.type,
-              codeFileName: route.key,
-              key: `${route.key}_${method}`,
-              baseUrl: strippedUrl,
-              pathParams: route.pathParams,
-              queryParams: Object.entries(
-                config.SERVERS?.[`${route.key}_${method}`]?.explicitQueryParams ?? [],
-              ),
-            }) satisfies FinalRoute,
-        ),
-      );
+      finalRoutes.push(...expandServerRoute(route, config.SERVERS));
     } else if (route.type === 'ACTION' && route.names.length > 0) {
-      finalRoutes.push(
-        ...route.names.map(
-          (name) =>
-            ({
-              type: route.type,
-              codeFileName: route.key,
-              key: `${route.key}_${name}`,
-              baseUrl: strippedUrl,
-              urlSuffix: name === 'default' ? undefined : `?/${name}`,
-              pathParams: route.pathParams,
-              queryParams: Object.entries(
-                config.SERVERS?.[`${route.key}_${name}`]?.explicitQueryParams ?? [],
-              ),
-            }) satisfies FinalRoute,
-        ),
-      );
+      finalRoutes.push(...expandActionRoute(route, config.ACTIONS));
     }
   }
 
   return finalRoutes;
 };
 
+export const expandServerRoute = (route: ServerRoute, config: RoutesConfig['SERVERS']): FinalRoute[] =>
+  getServerRouteKeys(route).map(({ key }) => ({
+    identifier: `${route.type}_${key}`,
+    codeFileName: route.key,
+    baseUrl: normalizeUrl(route.routeId),
+    pathParams: route.pathParams,
+    queryParams: Object.entries(config?.[key]?.explicitQueryParams ?? []),
+  }));
+
+export const expandActionRoute = (route: ActionRoute, config: RoutesConfig['ACTIONS']): FinalRoute[] =>
+  getActionRouteKeys(route).map(({ key, name }) => ({
+    identifier: `${route.type}_${key}`,
+    codeFileName: route.key,
+    baseUrl: normalizeUrl(route.routeId),
+    urlSuffix: name === 'default' ? undefined : `?/${name}`,
+    pathParams: route.pathParams,
+    queryParams: Object.entries(config?.[key]?.explicitQueryParams ?? []),
+  }));
+
 function* generateRoute(
   route: FinalRoute,
   generateRouteWithoutParameters: RouteGenerator<GeneratorParams>,
-  getUrlReplacementString: PathParameterStringReplacer | null,
   generateRouteWithParameters: RouteGenerator<GeneratorParamsWithParams>,
 ) {
-  let { type, key, codeFileName, baseUrl, urlSuffix, pathParams, queryParams } = route;
-  const identifier = `${type}_${key}`;
+  let { identifier, codeFileName, baseUrl, urlSuffix, pathParams, queryParams } = route;
 
-  const paramCount = pathParams.length + queryParams.length;
-
-  if (paramCount === 0) {
+  if (pathParams.length + queryParams.length === 0) {
     return yield* generateRouteWithoutParameters({
       identifier,
       codeFileName,
       baseUrl,
       urlSuffix,
     });
-  }
-
-  if (getUrlReplacementString) {
-    for (const param of pathParams) {
-      // For multi parameters also replace the leading slash. When there are values to join it will
-      // be added again later.
-      const searchValue = param.multi ? `/${param.rawInRoute}` : param.rawInRoute;
-
-      const replaceValue = getUrlReplacementString({
-        param,
-        pathParams,
-        queryParams,
-      });
-
-      baseUrl = baseUrl.replace(searchValue, replaceValue);
-    }
   }
 
   return yield* generateRouteWithParameters({

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { test } from 'vitest';
-import { actions } from './+page.server';
-import Page from './+page.svelte';
+import { actions } from '../../../../../src/routes/groups/(group)/more/+page.server.js';
+import Page from '../../../../../src/routes/groups/(group)/more/+page.svelte';
 
 test('page', ({ expect }) => {
   render(Page);

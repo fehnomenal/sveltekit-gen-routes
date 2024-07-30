@@ -1,5 +1,5 @@
 import { test } from 'vitest';
-import { GET, POST, PUT } from './+server';
+import { GET, POST, PUT } from '../../../../../../src/routes/(params)/[one]/[two=int]/[...more]/+server.js';
 
 test('endpoint', async ({ expect }) => {
   expect((await GET().json()).SERVER_params_one_two_int_more_GET).toBe('/1/2');

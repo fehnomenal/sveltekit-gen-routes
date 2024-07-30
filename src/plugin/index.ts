@@ -5,7 +5,7 @@ import { name } from '../../package.json';
 import { getIndexCodeLines, getRouteKeyCodeLines } from './code.js';
 import { getDeclarationFileContentLines } from './declaration.js';
 import { getRelativeFilesOfDir } from './readdir.js';
-import { getRouteId, resolveRouteInfo } from './resolve.js';
+import { getRouteId, getRouteTypeFromFileName, resolveRouteInfo } from './resolve.js';
 import type { AllRoutesMeta, Config, Route } from './types.js';
 import { isDebug, isInSubdir, joinLines, makeRelativePath } from './utils.js';
 
@@ -67,7 +67,10 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
       if (change.event === 'delete') {
         routes = routes.filter((r) => r.routeId !== routeId);
       } else {
-        resolveRouteInfo(routeId, id, routes);
+        const routeType = getRouteTypeFromFileName(id);
+        if (routeType) {
+          resolveRouteInfo(routeId, routeType, () => readFileSync(id, { encoding: 'utf-8' }), routes);
+        }
       }
 
       latestUpdate = Date.now();
@@ -86,7 +89,15 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
       for (const file of getRelativeFilesOfDir(routesDir)) {
         const routeId = getRouteId(file);
 
-        resolveRouteInfo(routeId, resolve(routesDir, file), routes);
+        const routeType = getRouteTypeFromFileName(file);
+        if (routeType) {
+          resolveRouteInfo(
+            routeId,
+            routeType,
+            () => readFileSync(resolve(routesDir, file), { encoding: 'utf-8' }),
+            routes,
+          );
+        }
       }
 
       latestUpdate = Date.now();
@@ -148,19 +159,13 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
 
       if (id === routeIndexModuleId) {
         codeLines = getIndexCodeLines(routes, routesConfig, moduleName);
-
-        console.log('load', 'index', id);
       } else if (isInSubdir(routeModuleIdPrefix, id) && id.endsWith('.js')) {
         const routeKey = basename(id, '.js');
 
         const filteredRoutes = routes.filter((r) => r.key === routeKey);
 
         codeLines = getRouteKeyCodeLines(filteredRoutes, routesConfig);
-
-        console.log('load', 'route', id);
       } else {
-        console.log('load', 'unknown', id);
-
         return;
       }
 
