@@ -227,9 +227,6 @@ You can even get typesafety inside the configuration object:
 ## Publish
 
 ```sh
-> # optionally squash merge branch
-> git merge --squash ...
-> git commit
 > bun version
 > # update readme
 > git add ...
