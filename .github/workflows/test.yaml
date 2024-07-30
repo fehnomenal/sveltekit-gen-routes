@@ -6,9 +6,9 @@ on:
     paths: 
       - src/**
       - test/**
-      - *.json
-      - *.js
-      - *.ts
+      - '*.json'
+      - '*.js'
+      - '*.ts'
 
 jobs:
   test:
