@@ -5,7 +5,7 @@ import {
 } from '../../src/plugin/declaration.js';
 
 describe('routes without parameters', (test) => {
-  test('root route', ({ expect }) => {
+  test('server root route', ({ expect }) => {
     const lines = generateDeclsForRouteWithoutParams('/', 'SERVER__ROOT_HEAD');
 
     expect([...lines]).toMatchInlineSnapshot(`
@@ -14,6 +14,19 @@ describe('routes without parameters', (test) => {
         "export function SERVER__ROOT_HEAD_query(",
         "  queryParams: QueryParams,",
         "): \`\${Base}/\${string /* queryParams */}\`;",
+      ]
+    `);
+  });
+
+  test('action root route', ({ expect }) => {
+    const lines = generateDeclsForRouteWithoutParams('/?/login', 'ACTION__ROOT_login');
+
+    expect([...lines]).toMatchInlineSnapshot(`
+      [
+        "export const ACTION__ROOT_login: \`\${Base}/?/login\`;",
+        "export function ACTION__ROOT_login_query(",
+        "  queryParams: QueryParams,",
+        "): \`\${Base}/?/login\${string /* queryParams */}\`;",
       ]
     `);
   });
