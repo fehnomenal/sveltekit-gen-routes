@@ -115,6 +115,68 @@ describe('routes with only path parameters', (test) => {
       ]
     `);
   });
+
+  test('rest with following path', ({ expect }) => {
+    const lines = generateDeclsForRouteWithParams(
+      '/pages/[...path]/edit',
+      'PAGE_pages_path_edit',
+      [
+        {
+          name: 'path',
+          type: 'string | string[]',
+          rawInRoute: '[...path]',
+          matcher: undefined,
+          multi: true,
+        },
+      ],
+      [],
+    );
+
+    expect([...lines]).toMatchInlineSnapshot(`
+      [
+        "export function PAGE_pages_path_edit(",
+        "  path: string | string[],",
+        "  queryParams?: QueryParams,",
+        "): \`\${Base}/pages\${string /* path */}/edit\${string /* queryParams */}\`;",
+      ]
+    `);
+  });
+
+  test('rest with following param', ({ expect }) => {
+    const lines = generateDeclsForRouteWithParams(
+      '/pages/[...path]/[action]',
+      'PAGE_pages_path_action',
+      [
+        {
+          name: 'path',
+          type: 'string | string[]',
+          rawInRoute: '[...path]',
+          matcher: undefined,
+          multi: true,
+        },
+        {
+          name: 'action',
+          type: 'string',
+          rawInRoute: '[action]',
+          matcher: undefined,
+          multi: false,
+        },
+      ],
+      [],
+    );
+
+    expect([...lines]).toMatchInlineSnapshot(`
+      [
+        "export function PAGE_pages_path_action(",
+        "  params: {,",
+        "    path?: string | string[],",
+        "    action: string,",
+        "  },",
+        "  queryParams?: QueryParams,",
+        "): \`\${Base}/pages\${string /* params.path */}/\${typeof params.action}\${string /* queryParams */}\`;",
+      ]
+    `);
+  });
 });
 
 describe('routes with only query parameters', (test) => {
