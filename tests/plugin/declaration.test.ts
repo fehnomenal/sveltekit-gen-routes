@@ -135,7 +135,7 @@ describe('routes with only path parameters', (test) => {
     expect([...lines]).toMatchInlineSnapshot(`
       [
         "export function PAGE_pages_path_edit(",
-        "  path: string | string[],",
+        "  path?: string | string[],",
         "  queryParams?: QueryParams,",
         "): \`\${Base}/pages\${string /* path */}/edit\${string /* queryParams */}\`;",
       ]
@@ -168,7 +168,7 @@ describe('routes with only path parameters', (test) => {
     expect([...lines]).toMatchInlineSnapshot(`
       [
         "export function PAGE_pages_path_action(",
-        "  params: {,",
+        "  params: {",
         "    path?: string | string[],",
         "    action: string,",
         "  },",

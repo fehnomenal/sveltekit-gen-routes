@@ -76,12 +76,12 @@ export function* generateDeclsForRouteWithParams(
 ) {
   url = replacePathParams(url, pathParams, (param) =>
     param.multi
-      ? `\${string /* ${param.name} */}`
+      ? `\${string /* ${pathParams.length + queryParams.length > 1 ? 'params.' : ''}${param.name} */}`
       : `\${typeof ${pathParams.length + queryParams.length > 1 ? 'params.' : ''}${param.name}}`,
   );
 
-  const pathParamsStringified = pathParams.map(pathParamToString);
-  const queryParamsStringified = queryParams.map(queryParamToString);
+  const pathParamsStringified = pathParams.map((p) => paramToString(p.name, p.multi, p.type));
+  const queryParamsStringified = queryParams.map(([name, p]) => paramToString(name, !p.required, p.type));
   const paramsStringified = [...pathParamsStringified, ...queryParamsStringified];
 
   yield `export function ${routeIdentifier}(`;
@@ -89,12 +89,12 @@ export function* generateDeclsForRouteWithParams(
     const [param] = paramsStringified;
     yield `  ${param},`;
   } else {
-    const anyRequired = pathParams.length > 0 || queryParams.some(([, p]) => p.required);
+    const allOptional = pathParams.every((p) => p.multi) && queryParams.every(([, p]) => !p.required);
 
-    if (anyRequired) {
-      yield `  params: {`;
-    } else {
+    if (allOptional) {
       yield `  params?: {`;
+    } else {
+      yield `  params: {`;
     }
 
     for (const param of paramsStringified) {
@@ -106,9 +106,8 @@ export function* generateDeclsForRouteWithParams(
   yield `): \`${baseUrlString('Base', url)}\${string /* queryParams */}\`;`;
 }
 
-const pathParamToString = (param: PathParameter) => [param.name, ': ', param.type].join('');
-const queryParamToString = ([name, param]: [string, QueryParamConfig]) =>
-  [name, param.required && '?', ': ', param.type].filter(Boolean).join('');
+const paramToString = (name: string, optional: boolean, type: string) =>
+  [name, optional && '?', ': ', type].filter(Boolean).join('');
 
 function* routesMeta(routes: Route[]) {
   const meta: Record<Route['type'], Record<string, string>> = {

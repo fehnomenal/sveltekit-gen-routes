@@ -34,30 +34,30 @@ declare module '$routes' {
   ): `${Base}/${typeof params.one}/${typeof params.two}${string /* queryParams */}`;
 
   export function PAGE_rest(
-    rest: string | string[],
+    rest?: string | string[],
     queryParams?: QueryParams,
   ): `${Base}${string /* rest */}${string /* queryParams */}`;
 
   export function PAGE_rest_more(
-    rest: string | string[],
+    rest?: string | string[],
     queryParams?: QueryParams,
   ): `${Base}${string /* rest */}/more${string /* queryParams */}`;
 
   export function PAGE_rest_more_param(
     params: {
-      rest: string | string[],
+      rest?: string | string[],
       param: string,
     },
     queryParams?: QueryParams,
-  ): `${Base}${string /* rest */}/more/${typeof params.param}${string /* queryParams */}`;
+  ): `${Base}${string /* params.rest */}/more/${typeof params.param}${string /* queryParams */}`;
 
   export function PAGE_rest_param(
     params: {
-      rest: string | string[],
+      rest?: string | string[],
       param: string,
     },
     queryParams?: QueryParams,
-  ): `${Base}${string /* rest */}/${typeof params.param}${string /* queryParams */}`;
+  ): `${Base}${string /* params.rest */}/${typeof params.param}${string /* queryParams */}`;
 
   export const SERVER__ROOT_HEAD: `${Base}/`;
   export function SERVER__ROOT_HEAD_query(
@@ -68,28 +68,28 @@ declare module '$routes' {
     params: {
       one: string,
       two: Param_int,
-      more: string | string[],
+      more?: string | string[],
     },
     queryParams?: QueryParams,
-  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* more */}${string /* queryParams */}`;
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
   export function SERVER_params_one_two_int_more_POST(
     params: {
       one: string,
       two: Param_int,
-      more: string | string[],
+      more?: string | string[],
     },
     queryParams?: QueryParams,
-  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* more */}${string /* queryParams */}`;
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
   export function SERVER_params_one_two_int_more_PUT(
     params: {
       one: string,
       two: Param_int,
-      more: string | string[],
+      more?: string | string[],
     },
     queryParams?: QueryParams,
-  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* more */}${string /* queryParams */}`;
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
   export const ACTION_groups_group_more_do_that: `${Base}/groups/more?/do_that`;
   export function ACTION_groups_group_more_do_that_query(
