@@ -75,6 +75,11 @@ export type Config<Meta extends AllRoutesMeta = AllRoutesMeta> = {
    * @default './src'
    */
   outputDir?: string;
+  /**
+   * Always create a route `PAGE__ROOT` even when no files `src/routes/+page.svelte` or `src/routes/+page.(js|ts)` are present.
+   * @default true
+   */
+  forceRootRoute?: boolean;
 
   debug?: boolean | Partial<Record<DebugKey, boolean>>;
 } & RoutesConfig<Meta>;

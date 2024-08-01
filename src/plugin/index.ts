@@ -19,6 +19,7 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   routesDir = join('.', 'src', 'routes'),
   paramMatchersDir = join('.', 'src', 'params'),
   outputDir = join('.', 'src'),
+  forceRootRoute = true,
 
   debug,
   ...routesConfig
@@ -68,6 +69,10 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
           routes,
         );
       }
+    }
+
+    if (forceRootRoute) {
+      resolveRouteInfo('/', 'PAGE_COMPONENT', () => '', routes);
     }
   };
 

@@ -158,6 +158,11 @@ The `sveltekitRoutes` function takes an object for configuration. Here you can c
    * @default './src'
    */
   outputDir?: string;
+  /**
+   * Always create a route `PAGE__ROOT` even when no files `src/routes/+page.svelte` or `src/routes/+page.(js|ts)` are present.
+   * @default true
+   */
+  forceRootRoute?: boolean;
 ```
 
 You can define explicit query parameters for each route:
