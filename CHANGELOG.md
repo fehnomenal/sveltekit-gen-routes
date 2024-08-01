@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.2
+
+### Patch Changes
+
+- ef5c42f: Remove publish script in published package
+
 ## 4.1.1
 
 ### Patch Changes
