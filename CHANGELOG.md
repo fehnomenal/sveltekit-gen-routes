@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.1
+
+### Patch Changes
+
+- a66aac4: Reduce size by not bundling dependencies
+
 ## 4.1.0
 
 ### Minor Changes
