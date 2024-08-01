@@ -1,5 +1,16 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.0
+
+### Minor Changes
+
+- 460aed5: Optionally enforce creation of a root route
+
+### Patch Changes
+
+- 6fbce63: Correctly remove routes for removed files
+- a8d7536: Make rest parameters optionally
+
 ## 4.0.0
 
 ### Major Changes
