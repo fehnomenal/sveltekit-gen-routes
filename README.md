@@ -236,7 +236,6 @@ You can even get typesafety inside the configuration object:
 > # update readme
 > git add ...
 > git commit -m "bump version to v..."
-> bun run build
 > bun run publish
 > git push
 > git push --tags
