@@ -29,7 +29,7 @@ describe('resolve route info', (test) => {
     test('simple', ({ expect }) => {
       const routes: Route[] = [];
 
-      resolveRouteInfo('/users', 'PAGE', () => '', routes);
+      resolveRouteInfo('/users', 'PAGE_COMPONENT', () => '', routes);
 
       expect(routes[0]).toStrictEqual({
         type: 'PAGE',
@@ -42,14 +42,14 @@ describe('resolve route info', (test) => {
     test('path params', ({ expect }) => {
       const routes: Route[] = [];
 
-      resolveRouteInfo('/users/new=[user_type=user_type]', 'PAGE', () => '', routes);
-      resolveRouteInfo('/users/id=[user_id]', 'PAGE', () => '', routes);
-      resolveRouteInfo('/(public_pages)/[...path]', 'PAGE', () => '', routes);
+      resolveRouteInfo('/users/new=[user_type=user_type]', 'PAGE_SCRIPT', () => '', routes);
+      resolveRouteInfo('/users/id=[user_id]', 'PAGE_COMPONENT', () => '', routes);
+      resolveRouteInfo('/(public_pages)/[...path]', 'PAGE_SCRIPT', () => '', routes);
 
-      resolveRouteInfo('/(params)/[one]', 'PAGE', () => '', routes);
+      resolveRouteInfo('/(params)/[one]', 'PAGE_COMPONENT', () => '', routes);
       resolveRouteInfo(
         '/(params)/[one]/[two=int]/[...more]',
-        'SERVER',
+        'SERVER_SCRIPT',
         () => 'export const GET = () => new Response;',
         routes,
       );
@@ -144,7 +144,7 @@ describe('resolve route info', (test) => {
         },
       ]);
 
-      expect(() => resolveRouteInfo('/view/[[id=int]]', 'PAGE', () => '', routes)).toThrow(
+      expect(() => resolveRouteInfo('/view/[[id=int]]', 'PAGE_SCRIPT', () => '', routes)).toThrow(
         'Optional path parameters are not supported yet!',
       );
     });
@@ -153,8 +153,13 @@ describe('resolve route info', (test) => {
   test('server', ({ expect }) => {
     const routes: Route[] = [];
 
-    resolveRouteInfo('/api/health', 'SERVER', () => 'export const GET = () => new Response();', routes);
-    resolveRouteInfo('/empty', 'SERVER', () => '', routes);
+    resolveRouteInfo(
+      '/api/health',
+      'SERVER_SCRIPT',
+      () => 'export const GET = () => new Response();',
+      routes,
+    );
+    resolveRouteInfo('/empty', 'SERVER_SCRIPT', () => '', routes);
 
     expect(routes).toStrictEqual([
       {
@@ -179,7 +184,7 @@ describe('resolve route info', (test) => {
 
     resolveRouteInfo(
       '/users/id=[user_id]',
-      'ACTION',
+      'PAGE_SERVER_SCRIPT',
       () => `
         export const actions = {
           create: () => new Response(),
@@ -189,7 +194,7 @@ describe('resolve route info', (test) => {
       `,
       routes,
     );
-    resolveRouteInfo('/empty', 'ACTION', () => '', routes);
+    resolveRouteInfo('/empty', 'PAGE_SERVER_SCRIPT', () => '', routes);
 
     expect(routes).toStrictEqual([
       {

@@ -5,7 +5,12 @@ import { name } from '../../package.json';
 import { getIndexCodeLines, getRouteKeyCodeLines } from './code.js';
 import { getDeclarationFileContentLines } from './declaration.js';
 import { getRelativeFilesOfDir } from './readdir.js';
-import { getRouteId, getRouteTypeFromFileName, resolveRouteInfo } from './resolve.js';
+import {
+  getFileTypeFromFileName,
+  getRouteId,
+  getRouteTypeFromFileType,
+  resolveRouteInfo,
+} from './resolve.js';
 import type { AllRoutesMeta, Config, Route } from './types.js';
 import { isDebug, isInSubdir, joinLines, makeRelativePath } from './utils.js';
 
@@ -18,7 +23,7 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   debug,
   ...routesConfig
 }: Config<Meta> = {}): Plugin => {
-  let routes: Route[] = [];
+  const routes: Route[] = [];
 
   routesDir = resolve(routesDir);
   paramMatchersDir = resolve(paramMatchersDir);
@@ -29,6 +34,9 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
   const relativeOutputDir = makeRelativePath('.', outputDir);
   const routeIndexModuleId = makeRelativePath('.', resolve(outputDir, `${moduleName}.js`));
   const routeModuleIdPrefix = resolve(outputDir, moduleName);
+
+  let isDev = false;
+  let latestUpdate = 0;
 
   const writeFileContents = (file: string, contents: string | string[]) => {
     if (Array.isArray(contents)) {
@@ -47,8 +55,34 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
     writeFileSync(file, contents, { encoding: 'utf-8' });
   };
 
-  let isDev = false;
-  let latestUpdate = 0;
+  const resolveAllRoutes = () => {
+    for (const file of getRelativeFilesOfDir(routesDir)) {
+      const routeId = getRouteId(file);
+
+      const fileType = getFileTypeFromFileName(file);
+      if (fileType) {
+        resolveRouteInfo(
+          routeId,
+          fileType,
+          () => readFileSync(resolve(routesDir, file), { encoding: 'utf-8' }),
+          routes,
+        );
+      }
+    }
+  };
+
+  const handleUpdatedRoutes = () => {
+    latestUpdate = Date.now();
+
+    const lines = getDeclarationFileContentLines(
+      moduleName,
+      declarationFilePath,
+      paramMatchersDir,
+      routes,
+      routesConfig,
+    );
+    writeFileContents(declarationFilePath, lines);
+  };
 
   return {
     name,
@@ -62,54 +96,40 @@ export const sveltekitRoutes = <Meta extends AllRoutesMeta = AllRoutesMeta>({
         return;
       }
 
-      const routeId = getRouteId(relative(routesDir, id));
+      const fileType = getFileTypeFromFileName(id);
 
-      if (change.event === 'delete') {
-        routes = routes.filter((r) => r.routeId !== routeId);
-      } else {
-        const routeType = getRouteTypeFromFileName(id);
-        if (routeType) {
-          resolveRouteInfo(routeId, routeType, () => readFileSync(id, { encoding: 'utf-8' }), routes);
+      if (fileType) {
+        const routeId = getRouteId(relative(routesDir, id));
+
+        if (change.event === 'delete') {
+          if (fileType === 'PAGE_COMPONENT' || fileType === 'PAGE_SCRIPT') {
+            // The route may only be removed if there is neither a page component nor a page script file
+            // remaining. Instead of testing for existing files, we just rebuild the routes array.
+            // TODO: Improve this if it ever becomes a performance problem.
+
+            routes.splice(0, routes.length);
+            resolveAllRoutes();
+          } else {
+            const routeType = getRouteTypeFromFileType(fileType);
+            const idxToRemove = routes.findIndex((r) => r.type === routeType && r.routeId === routeId);
+
+            if (idxToRemove === -1) {
+              return;
+            }
+
+            routes.splice(idxToRemove, 1);
+          }
+        } else {
+          resolveRouteInfo(routeId, fileType, () => readFileSync(id, { encoding: 'utf-8' }), routes);
         }
+
+        handleUpdatedRoutes();
       }
-
-      latestUpdate = Date.now();
-
-      const lines = getDeclarationFileContentLines(
-        moduleName,
-        declarationFilePath,
-        paramMatchersDir,
-        routes,
-        routesConfig,
-      );
-      writeFileContents(declarationFilePath, lines);
     },
 
     async buildStart() {
-      for (const file of getRelativeFilesOfDir(routesDir)) {
-        const routeId = getRouteId(file);
-
-        const routeType = getRouteTypeFromFileName(file);
-        if (routeType) {
-          resolveRouteInfo(
-            routeId,
-            routeType,
-            () => readFileSync(resolve(routesDir, file), { encoding: 'utf-8' }),
-            routes,
-          );
-        }
-      }
-
-      latestUpdate = Date.now();
-
-      const lines = getDeclarationFileContentLines(
-        moduleName,
-        declarationFilePath,
-        paramMatchersDir,
-        routes,
-        routesConfig,
-      );
-      writeFileContents(declarationFilePath, lines);
+      resolveAllRoutes();
+      handleUpdatedRoutes();
     },
 
     resolveId(id) {

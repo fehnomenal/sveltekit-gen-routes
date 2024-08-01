@@ -4,11 +4,10 @@ import ts, { type Identifier } from 'typescript';
 import { normalizePath } from 'vite';
 import type { ActionRoute, PageRoute, PathParameter, Route, ServerRoute } from './types.js';
 
-const isServerEndpointFile = (file: string) => /^\+server\.(js|ts)$/.test(file);
-
-const isPageFile = (file: string) => /^\+page(@.*?)?\.svelte$/.test(file) || /^\+page\.(js|ts)$/.test(file);
-
-const isPageServerFile = (file: string) => /^\+page\.server\.(js|ts)$/.test(file);
+const serverScriptPattern = /^\+server\.(js|ts)$/;
+const pageComponentPattern = /^\+page(@.*?)?\.svelte$/;
+const pageScriptPattern = /^\+page\.(js|ts)$/;
+const pageServerScriptPattern = /^\+page\.server\.(js|ts)$/;
 
 export const getRouteId = (routesDirRelativePath: string) =>
   // Prepending the slash here correctly handles `dirname('/')` and thus root routes.
@@ -58,32 +57,57 @@ const getRoutePathParams = (routeId: string) => {
   return pathParams;
 };
 
-export const getRouteTypeFromFileName = (fileName: string): Route['type'] | null => {
+type FileType = NonNullable<ReturnType<typeof getFileTypeFromFileName>>;
+
+export const getFileTypeFromFileName = (
+  fileName: string,
+): 'SERVER_SCRIPT' | 'PAGE_COMPONENT' | 'PAGE_SCRIPT' | 'PAGE_SERVER_SCRIPT' | null => {
   fileName = basename(fileName);
 
-  if (isServerEndpointFile(fileName)) {
-    return 'SERVER';
+  if (serverScriptPattern.test(fileName)) {
+    return 'SERVER_SCRIPT';
   }
 
-  if (isPageFile(fileName)) {
-    return 'PAGE';
+  if (pageComponentPattern.test(fileName)) {
+    return 'PAGE_COMPONENT';
   }
 
-  if (isPageServerFile(fileName)) {
-    return 'ACTION';
+  if (pageScriptPattern.test(fileName)) {
+    return 'PAGE_SCRIPT';
+  }
+
+  if (pageServerScriptPattern.test(fileName)) {
+    return 'PAGE_SERVER_SCRIPT';
   }
 
   return null;
 };
 
+export const getRouteTypeFromFileType = (fileType: FileType): Route['type'] => {
+  if (fileType === 'SERVER_SCRIPT') {
+    return 'SERVER';
+  }
+
+  if (fileType === 'PAGE_COMPONENT' || fileType === 'PAGE_SCRIPT') {
+    return 'PAGE';
+  }
+
+  if (fileType === 'PAGE_SERVER_SCRIPT') {
+    return 'ACTION';
+  }
+
+  throw new Error(`Unexpected route type: '${fileType}'`);
+};
+
 export const resolveRouteInfo = (
   routeId: string,
-  type: Route['type'],
+  fileType: FileType,
   getSource: () => string,
   routes: Route[],
 ) => {
   const key = getRouteKey(routeId);
   const pathParams = getRoutePathParams(routeId);
+  const type = getRouteTypeFromFileType(fileType);
 
   function getExisting(type: 'SERVER'): ServerRoute | undefined;
   function getExisting(type: 'PAGE'): PageRoute | undefined;
@@ -106,6 +130,8 @@ export const resolveRouteInfo = (
     }
 
     route.methods = extractMethodsFromServerEndpointCode(getSource()).sort();
+
+    return;
   }
 
   if (type === 'PAGE') {
@@ -119,6 +145,8 @@ export const resolveRouteInfo = (
       };
       routes.push(route);
     }
+
+    return;
   }
 
   if (type === 'ACTION') {
@@ -135,7 +163,11 @@ export const resolveRouteInfo = (
     }
 
     route.names = extractActionNamesFromPageServerCode(getSource()).sort();
+
+    return;
   }
+
+  throw new Error(`Unexpected route type: '${type}'`);
 };
 
 const extractMethodsFromServerEndpointCode = (code: string): string[] => {
