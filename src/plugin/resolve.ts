@@ -1,14 +1,14 @@
 import slugify from '@sindresorhus/slugify';
-import { dirname } from 'node:path';
+import { basename, dirname } from 'node:path';
 import ts, { type Identifier } from 'typescript';
 import { normalizePath } from 'vite';
 import type { ActionRoute, PageRoute, PathParameter, Route, ServerRoute } from './types.js';
 
-const isServerEndpointFile = (file: string) => /\+server\.(js|ts)$/.test(file);
+const isServerEndpointFile = (file: string) => /^\+server\.(js|ts)$/.test(file);
 
-const isPageFile = (file: string) => /\+page(@.*?)?\.svelte$/.test(file) || /\+page\.(js|ts)$/.test(file);
+const isPageFile = (file: string) => /^\+page(@.*?)?\.svelte$/.test(file) || /^\+page\.(js|ts)$/.test(file);
 
-const isPageServerFile = (file: string) => /\+page\.server\.(js|ts)$/.test(file);
+const isPageServerFile = (file: string) => /^\+page\.server\.(js|ts)$/.test(file);
 
 export const getRouteId = (routesDirRelativePath: string) =>
   // Prepending the slash here correctly handles `dirname('/')` and thus root routes.
@@ -59,6 +59,8 @@ const getRoutePathParams = (routeId: string) => {
 };
 
 export const getRouteTypeFromFileName = (fileName: string): Route['type'] | null => {
+  fileName = basename(fileName);
+
   if (isServerEndpointFile(fileName)) {
     return 'SERVER';
   }
