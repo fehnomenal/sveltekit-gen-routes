@@ -1,13 +1,13 @@
 import slugify from '@sindresorhus/slugify';
-import { dirname } from 'node:path';
+import { basename, dirname } from 'node:path';
 import ts, { type Identifier } from 'typescript';
 import { normalizePath } from 'vite';
 import type { ActionRoute, PageRoute, PathParameter, Route, ServerRoute } from './types.js';
 
-const serverScriptPattern = /\+server\.(js|ts)$/;
-const pageComponentPattern = /\+page(@.*?)?\.svelte$/;
-const pageScriptPattern = /\+page\.(js|ts)$/;
-const pageServerScriptPattern = /\+page\.server\.(js|ts)$/;
+const serverScriptPattern = /^\+server\.(js|ts)$/;
+const pageComponentPattern = /^\+page(@.*?)?\.svelte$/;
+const pageScriptPattern = /^\+page\.(js|ts)$/;
+const pageServerScriptPattern = /^\+page\.server\.(js|ts)$/;
 
 export const getRouteId = (routesDirRelativePath: string) =>
   // Prepending the slash here correctly handles `dirname('/')` and thus root routes.
@@ -62,6 +62,8 @@ type FileType = NonNullable<ReturnType<typeof getFileTypeFromFileName>>;
 export const getFileTypeFromFileName = (
   fileName: string,
 ): 'SERVER_SCRIPT' | 'PAGE_COMPONENT' | 'PAGE_SCRIPT' | 'PAGE_SERVER_SCRIPT' | null => {
+  fileName = basename(fileName);
+
   if (serverScriptPattern.test(fileName)) {
     return 'SERVER_SCRIPT';
   }
