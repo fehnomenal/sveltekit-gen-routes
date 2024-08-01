@@ -10,7 +10,7 @@ import { getActionRouteKeys, getServerRouteKeys, normalizeUrl, sortRoutes } from
 
 type GeneratorParams = {
   identifier: string;
-  codeFileName: string;
+  key: string;
   baseUrl: string;
   urlSuffix?: string;
 };
@@ -44,7 +44,7 @@ export function* generateRoutes(
 
 type FinalRoute = {
   identifier: string;
-  codeFileName: string;
+  key: string;
   baseUrl: string;
   urlSuffix?: string;
   pathParams: PathParameter[];
@@ -58,7 +58,7 @@ const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute[] => {
     if (route.type === 'PAGE') {
       finalRoutes.push({
         identifier: `${route.type}_${route.key}`,
-        codeFileName: route.key,
+        key: route.key,
         baseUrl: normalizeUrl(route.routeId),
         pathParams: route.pathParams,
         queryParams: Object.entries(config.PAGES?.[route.key]?.explicitQueryParams ?? {}),
@@ -76,7 +76,7 @@ const flattenRoutes = (routes: Route[], config: RoutesConfig): FinalRoute[] => {
 export const expandServerRoute = (route: ServerRoute, config: RoutesConfig['SERVERS']): FinalRoute[] =>
   getServerRouteKeys(route).map(({ key }) => ({
     identifier: `${route.type}_${key}`,
-    codeFileName: route.key,
+    key: route.key,
     baseUrl: normalizeUrl(route.routeId),
     pathParams: route.pathParams,
     queryParams: Object.entries(config?.[key]?.explicitQueryParams ?? []),
@@ -85,7 +85,7 @@ export const expandServerRoute = (route: ServerRoute, config: RoutesConfig['SERV
 export const expandActionRoute = (route: ActionRoute, config: RoutesConfig['ACTIONS']): FinalRoute[] =>
   getActionRouteKeys(route).map(({ key, name }) => ({
     identifier: `${route.type}_${key}`,
-    codeFileName: route.key,
+    key: route.key,
     baseUrl: normalizeUrl(route.routeId),
     urlSuffix: name === 'default' ? undefined : `?/${name}`,
     pathParams: route.pathParams,
@@ -97,12 +97,12 @@ function* generateRoute(
   generateRouteWithoutParameters: RouteGenerator<GeneratorParams>,
   generateRouteWithParameters: RouteGenerator<GeneratorParamsWithParams>,
 ) {
-  let { identifier, codeFileName, baseUrl, urlSuffix, pathParams, queryParams } = route;
+  let { identifier, key, baseUrl, urlSuffix, pathParams, queryParams } = route;
 
   if (pathParams.length + queryParams.length === 0) {
     return yield* generateRouteWithoutParameters({
       identifier,
-      codeFileName,
+      key,
       baseUrl,
       urlSuffix,
     });
@@ -110,7 +110,7 @@ function* generateRoute(
 
   return yield* generateRouteWithParameters({
     identifier,
-    codeFileName,
+    key,
     baseUrl,
     urlSuffix,
     pathParams,

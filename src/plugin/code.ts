@@ -13,11 +13,11 @@ export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleN
   ...generateRoutes(
     routes,
     config,
-    function* ({ identifier, codeFileName }) {
-      yield `export { ${identifier}, ${identifier}_query } from './${moduleName}/${codeFileName}.js';`;
+    function* ({ identifier, key }) {
+      yield `export { ${identifier}, ${identifier}_query } from './${moduleName}/${key}.js';`;
     },
-    function* ({ identifier, codeFileName }) {
-      yield `export { ${identifier} } from './${moduleName}/${codeFileName}.js';`;
+    function* ({ identifier, key }) {
+      yield `export { ${identifier} } from './${moduleName}/${key}.js';`;
     },
   ),
 ];
