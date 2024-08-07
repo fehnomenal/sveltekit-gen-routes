@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.3
+
+### Patch Changes
+
+- ef77b33: Use os dependent newlines. This should be better for default git configurations.
+
 ## 4.1.2
 
 ### Patch Changes
