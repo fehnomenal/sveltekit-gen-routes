@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { EOL } from 'node:os';
 import { isAbsolute, relative, sep } from 'node:path';
 import { normalizePath } from 'vite';
 import type { ActionRoute, Config, DebugKey, PathParameter, Route, ServerRoute } from './types.js';
@@ -26,7 +27,7 @@ export const isDebug = (debugConfig: Config['debug'], key: DebugKey): boolean =>
   return debugConfig?.[key] ?? false;
 };
 
-export const joinLines = (lines: string[]) => lines.join('\n').trim() + '\n';
+export const joinLines = (lines: string[]) => lines.join(EOL).trim() + EOL;
 
 export const getInSourceHelpersModulePath = () =>
   normalizePath(createRequire(import.meta.url).resolve(`./helpers.ts`));
