@@ -1,6 +1,6 @@
 {
   "name": "@fehnomenal/sveltekit-gen-routes",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "type": "module",
   "exports": {
     ".": {

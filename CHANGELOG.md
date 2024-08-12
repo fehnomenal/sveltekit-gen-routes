@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.4
+
+### Patch Changes
+
+- 46636ae: Only import actually used helper functions
+
 ## 4.1.3
 
 ### Patch Changes
