@@ -25,31 +25,58 @@ export const getIndexCodeLines = (routes: Route[], config: RoutesConfig, moduleN
 const helpersModule =
   process.env.NODE_ENV === 'production' ? `${name}/helpers` : getInSourceHelpersModulePath();
 
-export const getRouteKeyCodeLines = (routes: Route[], config: RoutesConfig) => [
-  `import { base } from '$app/paths';`,
-  `import { ${joinSegmentsName()}, ${routeQueryName()}, ${routeQueryParamName()}, ${routeQueryExtraName()} } from '${helpersModule}';`,
-  '',
-  ...genBaseRoute(routes, config),
-  ...routesCode(routes, config),
-];
+type RequiredImports = {
+  base: boolean;
+  helperNames: Set<string>;
+};
 
-const genBaseRoute = (routes: Route[], config: RoutesConfig) =>
+export const getRouteKeyCodeLines = (routes: Route[], config: RoutesConfig) => {
+  const requiredImports: RequiredImports = {
+    base: false,
+    helperNames: new Set(),
+  };
+
+  const codeLines = [
+    ...genBaseRoute(routes, config, requiredImports),
+    ...routesCode(routes, config, requiredImports),
+  ];
+
+  const header: string[] = [];
+
+  if (requiredImports.base) {
+    header.push(`import { base } from '$app/paths';`);
+  }
+
+  if (requiredImports.helperNames.size > 0) {
+    header.push(`import { ${[...requiredImports.helperNames].sort().join(', ')} } from '${helpersModule}';`);
+  }
+
+  if (header.length > 0) {
+    codeLines.unshift(...header, '');
+  }
+
+  return codeLines;
+};
+
+const genBaseRoute = (routes: Route[], config: RoutesConfig, requiredImports: RequiredImports) =>
   generateRoutes(
     routes,
     config,
     function* ({ baseUrl }) {
-      yield* generateCodeForBaseRouteWithoutParams(baseUrl);
+      yield* generateCodeForBaseRouteWithoutParams(baseUrl, requiredImports);
 
       return 'stop';
     },
     function* ({ baseUrl, pathParams, queryParams }) {
-      yield* generateCodeForBaseRouteWithParams(baseUrl, pathParams, queryParams);
+      yield* generateCodeForBaseRouteWithParams(baseUrl, pathParams, queryParams, requiredImports);
 
       return 'stop';
     },
   );
 
-export function* generateCodeForBaseRouteWithoutParams(url: string) {
+export function* generateCodeForBaseRouteWithoutParams(url: string, requiredImports?: RequiredImports) {
+  requiredImports && (requiredImports.base = true);
+
   yield `const route = \`${baseUrlString('base', url)}\`;`;
 }
 
@@ -57,9 +84,10 @@ export function* generateCodeForBaseRouteWithParams(
   url: string,
   pathParams: PathParameter[],
   queryParams: [string, QueryParamConfig][],
+  requiredImports?: RequiredImports,
 ) {
   if (pathParams.length === 0) {
-    yield* generateCodeForBaseRouteWithoutParams(url);
+    yield* generateCodeForBaseRouteWithoutParams(url, requiredImports);
   } else {
     url = replacePathParams(url, pathParams, (param) => {
       if (!param.multi) {
@@ -76,12 +104,16 @@ export function* generateCodeForBaseRouteWithParams(
         needSlashFallback = segments.indexOf(param.rawInRoute) === segments.length - 1;
       }
 
+      requiredImports?.helperNames.add(joinSegmentsName());
+
       return `\${${joinSegmentsName()}(${param.name})${needSlashFallback ? ` || '/'` : ''}}`;
     });
 
     const parts = [`const route = (`];
 
     parts.push(pathParams.map((p) => p.name).join(', '));
+
+    requiredImports && (requiredImports.base = true);
 
     parts.push(') => `');
     parts.push(baseUrlString('base', url));
@@ -91,15 +123,22 @@ export function* generateCodeForBaseRouteWithParams(
   }
 }
 
-const routesCode = (routes: Route[], config: RoutesConfig) =>
+const routesCode = (routes: Route[], config: RoutesConfig, requiredImports: RequiredImports) =>
   generateRoutes(
     routes,
     config,
     function* ({ identifier, baseUrl, urlSuffix }) {
-      yield* generateCodeForRouteWithoutParams(baseUrl, urlSuffix, identifier);
+      yield* generateCodeForRouteWithoutParams(baseUrl, urlSuffix, identifier, requiredImports);
     },
     function* ({ identifier, baseUrl, urlSuffix, pathParams, queryParams }) {
-      yield* generateCodeForRouteWithParams(baseUrl, urlSuffix, identifier, pathParams, queryParams);
+      yield* generateCodeForRouteWithParams(
+        baseUrl,
+        urlSuffix,
+        identifier,
+        pathParams,
+        queryParams,
+        requiredImports,
+      );
     },
   );
 
@@ -107,6 +146,7 @@ export function* generateCodeForRouteWithoutParams(
   baseUrl: string,
   urlSuffix: string | undefined,
   routeIdentifier: string,
+  requiredImports?: RequiredImports,
 ) {
   let route = 'route';
   const url = baseUrl + (urlSuffix ?? '');
@@ -116,6 +156,8 @@ export function* generateCodeForRouteWithoutParams(
 
     yield `const ${route} = \`\${route}${urlSuffix}\`;`;
   }
+
+  requiredImports?.helperNames.add(routeQueryName());
 
   yield `export const ${routeIdentifier} = ${route};`;
   yield `export const ${routeIdentifier}_query = ${buildRouteQuery(route, url)};`;
@@ -127,6 +169,7 @@ export function* generateCodeForRouteWithParams(
   routeIdentifier: string,
   pathParams: PathParameter[],
   queryParams: [string, QueryParamConfig][],
+  requiredImports?: RequiredImports,
 ) {
   let route: string;
   const url = baseUrl + (urlSuffix ?? '');
@@ -165,8 +208,12 @@ export function* generateCodeForRouteWithParams(
   parts.push(`, ${EXTRA_QUERY_PARAM_NAME}) => `);
 
   if (queryParams.length === 0) {
+    requiredImports?.helperNames.add(routeQueryParamName());
+
     parts.push(buildRouteQueryParam(route, url));
   } else {
+    requiredImports?.helperNames.add(routeQueryExtraName());
+
     parts.push(buildRouteQueryExtra(route, url, queryParamNames));
   }
 
