@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.5
+
+### Patch Changes
+
+- 4df1956: Do not check typescript in generated files
+
 ## 4.1.4
 
 ### Patch Changes
