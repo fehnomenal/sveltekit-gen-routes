@@ -1,4 +1,5 @@
 import { ACTION_params_one_default } from '$routes';
+import type { Actions } from './$types.js';
 
 export const actions = {
   default() {
@@ -7,4 +8,4 @@ export const actions = {
       ACTION_params_one_default_query: ACTION_params_one_default('uno', { a: 'b' }),
     };
   },
-};
+} satisfies Actions;

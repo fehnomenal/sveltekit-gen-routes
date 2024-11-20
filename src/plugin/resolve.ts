@@ -191,21 +191,15 @@ const extractActionNamesFromPageServerCode = (code: string): string[] => {
 
   findExports(source, (name, node) => {
     if (name === 'actions') {
-      if (ts.isVariableDeclaration(node) && node.initializer) {
-        if (ts.isObjectLiteralExpression(node.initializer)) {
-          node.initializer.properties.forEach((prop) => {
-            if (ts.isMethodDeclaration(prop)) {
-              names.push((prop.name as Identifier).text);
-            } else if (ts.isPropertyAssignment(prop)) {
-              names.push((prop.name as Identifier).text);
-            } else {
-              throw new Error(`Unhandled action property kind: ${ts.SyntaxKind[prop.kind]}`);
-            }
-          });
+      forEachActionsProperty(node, (prop) => {
+        if (ts.isMethodDeclaration(prop)) {
+          names.push((prop.name as Identifier).text);
+        } else if (ts.isPropertyAssignment(prop)) {
+          names.push((prop.name as Identifier).text);
+        } else {
+          throw new Error(`Unhandled action property kind: ${ts.SyntaxKind[prop.kind]}`);
         }
-      } else {
-        throw new Error(`Unhandled action kind: ${ts.SyntaxKind[node.kind]}`);
-      }
+      });
     }
   });
 
@@ -228,4 +222,14 @@ const findExports = (node: ts.Node, handleExport: (exportName: string, node: ts.
 
     node.forEachChild((node) => findExports(node, handleExport));
   });
+};
+
+const forEachActionsProperty = (node: ts.Node, callback: (prop: ts.ObjectLiteralElementLike) => void) => {
+  if (ts.isVariableDeclaration(node) && node.initializer) {
+    forEachActionsProperty(node.initializer, callback);
+  } else if (ts.isSatisfiesExpression(node)) {
+    forEachActionsProperty(node.expression, callback);
+  } else if (ts.isObjectLiteralExpression(node)) {
+    node.properties.forEach(callback);
+  }
 };
