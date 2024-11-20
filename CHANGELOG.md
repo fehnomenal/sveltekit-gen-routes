@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.1.6
+
+### Patch Changes
+
+- 5683318: Correctly retrieve action names from explicitely typed object
+
 ## 4.1.5
 
 ### Patch Changes
