@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 5683318: Correctly retrieve action names from explicitely typed object
+- 5683318: Correctly retrieve action names from explicitly typed object
 
 ## 4.1.5
 

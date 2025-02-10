@@ -196,6 +196,8 @@ const extractActionNamesFromPageServerCode = (code: string): string[] => {
           names.push((prop.name as Identifier).text);
         } else if (ts.isPropertyAssignment(prop)) {
           names.push((prop.name as Identifier).text);
+        } else if (ts.isShorthandPropertyAssignment(prop)) {
+          names.push(prop.name.text);
         } else {
           throw new Error(`Unhandled action property kind: ${ts.SyntaxKind[prop.kind]}`);
         }

@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 
+import type { ROUTES } from '$routes';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
@@ -8,7 +9,7 @@ import { sveltekitRoutes } from './src/plugin/index.js';
 export default defineConfig({
   plugins: [
     sveltekit(),
-    sveltekitRoutes({
+    sveltekitRoutes<ROUTES>({
       debug: true,
     }),
     svelteTesting(),

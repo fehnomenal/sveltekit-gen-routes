@@ -64,7 +64,34 @@ declare module '$routes' {
     queryParams: QueryParams,
   ): `${Base}/${string /* queryParams */}`;
 
+  export function SERVER_params_one_two_int_more_DELETE(
+    params: {
+      one: string,
+      two: Param_int,
+      more?: string | string[],
+    },
+    queryParams?: QueryParams,
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
+
   export function SERVER_params_one_two_int_more_GET(
+    params: {
+      one: string,
+      two: Param_int,
+      more?: string | string[],
+    },
+    queryParams?: QueryParams,
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
+
+  export function SERVER_params_one_two_int_more_HEAD(
+    params: {
+      one: string,
+      two: Param_int,
+      more?: string | string[],
+    },
+    queryParams?: QueryParams,
+  ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
+
+  export function SERVER_params_one_two_int_more_OPTIONS(
     params: {
       one: string,
       two: Param_int,
@@ -91,6 +118,16 @@ declare module '$routes' {
     queryParams?: QueryParams,
   ): `${Base}/${typeof params.one}/${typeof params.two}${string /* params.more */}${string /* queryParams */}`;
 
+  export const ACTION_groups_group_more_async_method_declaration: `${Base}/groups/more?/async_method_declaration`;
+  export function ACTION_groups_group_more_async_method_declaration_query(
+    queryParams: QueryParams,
+  ): `${Base}/groups/more?/async_method_declaration${string /* queryParams */}`;
+
+  export const ACTION_groups_group_more_async_property_assignment: `${Base}/groups/more?/async_property_assignment`;
+  export function ACTION_groups_group_more_async_property_assignment_query(
+    queryParams: QueryParams,
+  ): `${Base}/groups/more?/async_property_assignment${string /* queryParams */}`;
+
   export const ACTION_groups_group_more_do_that: `${Base}/groups/more?/do_that`;
   export function ACTION_groups_group_more_do_that_query(
     queryParams: QueryParams,
@@ -100,6 +137,16 @@ declare module '$routes' {
   export function ACTION_groups_group_more_do_this_query(
     queryParams: QueryParams,
   ): `${Base}/groups/more?/do_this${string /* queryParams */}`;
+
+  export const ACTION_groups_group_more_property_assignment: `${Base}/groups/more?/property_assignment`;
+  export function ACTION_groups_group_more_property_assignment_query(
+    queryParams: QueryParams,
+  ): `${Base}/groups/more?/property_assignment${string /* queryParams */}`;
+
+  export const ACTION_groups_group_more_shorthand: `${Base}/groups/more?/shorthand`;
+  export function ACTION_groups_group_more_shorthand_query(
+    queryParams: QueryParams,
+  ): `${Base}/groups/more?/shorthand${string /* queryParams */}`;
 
   export function ACTION_params_one_default(
     one: string,
@@ -120,13 +167,20 @@ declare module '$routes' {
     };
     SERVERS: {
       _ROOT_HEAD: never;
+      params_one_two_int_more_DELETE: 'one' | 'two' | 'more';
       params_one_two_int_more_GET: 'one' | 'two' | 'more';
+      params_one_two_int_more_HEAD: 'one' | 'two' | 'more';
+      params_one_two_int_more_OPTIONS: 'one' | 'two' | 'more';
       params_one_two_int_more_POST: 'one' | 'two' | 'more';
       params_one_two_int_more_PUT: 'one' | 'two' | 'more';
     };
     ACTIONS: {
+      groups_group_more_async_method_declaration: never;
+      groups_group_more_async_property_assignment: never;
       groups_group_more_do_that: never;
       groups_group_more_do_this: never;
+      groups_group_more_property_assignment: never;
+      groups_group_more_shorthand: never;
       params_one_default: 'one';
     };
   };
