@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.2.0
+
+### Minor Changes
+
+- f44159c: Support and test more ways to define route and action handlers
+
 ## 4.1.6
 
 ### Patch Changes
