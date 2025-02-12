@@ -1,6 +1,7 @@
 {
   "name": "@fehnomenal/sveltekit-gen-routes",
   "version": "4.2.2",
+  "license": "MIT",
   "type": "module",
   "exports": {
     ".": {
