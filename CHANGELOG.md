@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.2.4
+
+### Patch Changes
+
+- Fix release workflow _[`#16`](https://github.com/fehnomenal/sveltekit-gen-routes/pull/16) [`f19396c`](https://github.com/fehnomenal/sveltekit-gen-routes/commit/f19396cafc5fbad80a3a2e3077df2e4640299d2d) [@fehnomenal](https://github.com/fehnomenal)_
+
 ## 4.2.3
 
 ### Patch Changes
