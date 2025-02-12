@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.2.3
+
+### Patch Changes
+
+- Fix install instructions _[`#13`](https://github.com/fehnomenal/sveltekit-gen-routes/pull/13) [`473ab22`](https://github.com/fehnomenal/sveltekit-gen-routes/commit/473ab2287af6d07e4a59444e5e5f347bf03f3bfe) [@fehnomenal](https://github.com/fehnomenal)_
+
 ## 4.2.2
 
 ### Patch Changes
