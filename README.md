@@ -7,19 +7,19 @@ This vite plugin generates route helpers for sveltekit routes.
 Choose the one for your package manager.
 
 ```sh
-npm install -D github:fehnomenal/sveltekit-gen-routes
+npm install -D @fehnomenal/sveltekit-gen-routes
 ```
 
 ```sh
-yarn install -D github:fehnomenal/sveltekit-gen-routes
+yarn install -D @fehnomenal/sveltekit-gen-routes
 ```
 
 ```sh
-pnpm install -D github:fehnomenal/sveltekit-gen-routes
+pnpm install -D @fehnomenal/sveltekit-gen-routes
 ```
 
 ```sh
-bun add -D github:fehnomenal/sveltekit-gen-routes
+bun add -D @fehnomenal/sveltekit-gen-routes
 ```
 
 Import and include the plugin in your `vite.config.ts`:
