@@ -49,6 +49,10 @@
     "typescript": "*",
     "vite": "^5"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fehnomenal/sveltekit-gen-routes"
+  },
   "files": [
     "./dist"
   ]
