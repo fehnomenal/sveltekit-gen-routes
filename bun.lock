@@ -8,7 +8,6 @@
       },
       "devDependencies": {
         "@changesets/cli": "2.27.1",
-        "@fehnomenal/git-publisher": "github:fehnomenal/git-publisher#v1.0.3",
         "@sveltejs/kit": "2.5.18",
         "@testing-library/svelte": "5.2.0",
         "@types/bun": "latest",
@@ -117,8 +116,6 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.20.2", "", { "os": "win32", "cpu": "ia32" }, "sha512-HfLOfn9YWmkSKRQqovpnITazdtquEW8/SoHW7pWpuEeguaZI4QnCRW6b+oZTztdBnZOS2hqJ6im/D5cPzBTTlQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.20.2", "", { "os": "win32", "cpu": "x64" }, "sha512-N49X4lJX27+l9jbLKSqZ6bKNjzQvHaT8IIFUy+YIqmXQdjYCToGWwOItDrfby14c78aDd5NHQl29xingXfCdLQ=="],
-
-    "@fehnomenal/git-publisher": ["@fehnomenal/git-publisher@github:fehnomenal/git-publisher#fa0362c", { "bin": { "publish-git": "./dist/index.js" } }, "fehnomenal-git-publisher-fa0362c"],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.5", "", { "dependencies": { "@jridgewell/set-array": "^1.2.1", "@jridgewell/sourcemap-codec": "^1.4.10", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg=="],
 

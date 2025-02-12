@@ -26,14 +26,13 @@
     "format": "prettier -w src",
     "changeset": "changeset",
     "version": "changeset version",
-    "publish": "bun run build && publish-git"
+    "publish": "bun run build && changeset publish"
   },
   "dependencies": {
     "@sindresorhus/slugify": "2.2.1"
   },
   "devDependencies": {
     "@changesets/cli": "2.27.1",
-    "@fehnomenal/git-publisher": "github:fehnomenal/git-publisher#v1.0.3",
     "@sveltejs/kit": "2.5.18",
     "@testing-library/svelte": "5.2.0",
     "@types/bun": "latest",
