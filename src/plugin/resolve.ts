@@ -216,6 +216,10 @@ const findExports = (node: ts.Node, handleExport: (exportName: string, node: ts.
           handleExport((decl.name as ts.Identifier).text, decl),
         );
       }
+    } else if (ts.isFunctionDeclaration(node)) {
+      if (node.name && node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) {
+        handleExport(node.name.text, node);
+      }
     } else if (ts.isExportDeclaration(node)) {
       if (node.exportClause && ts.isNamedExports(node.exportClause)) {
         node.exportClause.elements.forEach((spec) => handleExport(spec.name.text, spec));
