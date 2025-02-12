@@ -7,19 +7,19 @@ This vite plugin generates route helpers for sveltekit routes.
 Choose the one for your package manager.
 
 ```sh
-npm install -D 'github:fehnomenal/sveltekit-gen-routes#semver:v4.2.0'
+npm install -D github:fehnomenal/sveltekit-gen-routes
 ```
 
 ```sh
-yarn install -D 'github:fehnomenal/sveltekit-gen-routes#semver:v4.2.0'
+yarn install -D github:fehnomenal/sveltekit-gen-routes
 ```
 
 ```sh
-pnpm install -D 'github:fehnomenal/sveltekit-gen-routes#semver:v4.2.0'
+pnpm install -D github:fehnomenal/sveltekit-gen-routes
 ```
 
 ```sh
-bun add -D 'github:fehnomenal/sveltekit-gen-routes#v4.2.0'
+bun add -D github:fehnomenal/sveltekit-gen-routes
 ```
 
 Import and include the plugin in your `vite.config.ts`:
@@ -219,24 +219,15 @@ You can even get typesafety inside the configuration object:
 
 ```sh
 > bun i
-> # optionally on a new branch
 > git switch -c ...
-> # work work work
+> # work work work and commit stuff
+> # add a changeset if it is an user-visible change
 > bun changeset
-> git add ...
-> git commit
-> # optionally push branch for automated tests
+> git add .changeset
+> git commit -m "changeset"
 > git push
 ```
 
 ## Publish
 
-```sh
-> bun version
-> # update readme
-> git add ...
-> git commit -m "bump version to v..."
-> bun run publish
-> git push
-> git push --tags
-```
+Publishing is done through the changesets bot and action.
