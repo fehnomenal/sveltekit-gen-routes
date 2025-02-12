@@ -40,7 +40,7 @@ describe('resolve route info', (test) => {
     });
 
     test('path params', ({ expect }) => {
-      const routes: Route[] = [];
+      let routes: Route[] = [];
 
       resolveRouteInfo('/users/new=[user_type=user_type]', 'PAGE_SCRIPT', () => '', routes);
       resolveRouteInfo('/users/id=[user_id]', 'PAGE_COMPONENT', () => '', routes);
@@ -144,9 +144,11 @@ describe('resolve route info', (test) => {
         },
       ]);
 
-      expect(() => resolveRouteInfo('/view/[[id=int]]', 'PAGE_SCRIPT', () => '', routes)).toThrow(
-        'Optional path parameters are not supported yet!',
-      );
+      routes = [];
+
+      resolveRouteInfo('/view/[[id=int]]', 'PAGE_SCRIPT', () => '', routes);
+
+      expect(routes).toStrictEqual([]);
     });
   });
 
