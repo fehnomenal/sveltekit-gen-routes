@@ -3,7 +3,7 @@ name: Test
 on:
   push:
     branches-ignore: main
-    paths: 
+    paths:
       - src/**
       - test/**
       - '*.json'
@@ -21,9 +21,13 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
       - run: bun install
+
       - run: bun run test
       - run: bun run check
       - run: bun run build
