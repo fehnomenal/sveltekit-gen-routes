@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.2.1
+
+### Patch Changes
+
+- Bump for releasing _[`#7`](https://github.com/fehnomenal/sveltekit-gen-routes/pull/7) [`0152a3e`](https://github.com/fehnomenal/sveltekit-gen-routes/commit/0152a3e6bd54228044ae7d712084673718d8c418) [@fehnomenal](https://github.com/fehnomenal)_
+
 ## 4.2.0
 
 ### Minor Changes
