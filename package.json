@@ -27,7 +27,7 @@
     "format": "prettier -w src",
     "changeset": "changeset",
     "version": "changeset version",
-    "publish": "bun run build && changeset publish"
+    "release": "bun run build && changeset publish"
   },
   "dependencies": {
     "@sindresorhus/slugify": "2.2.1"
