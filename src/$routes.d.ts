@@ -59,8 +59,18 @@ declare module '$routes' {
     queryParams?: QueryParams,
   ): `${Base}${string /* params.rest */}/${typeof params.param}${string /* queryParams */}`;
 
+  export const SERVER__ROOT_GET: `${Base}/`;
+  export function SERVER__ROOT_GET_query(
+    queryParams: QueryParams,
+  ): `${Base}/${string /* queryParams */}`;
+
   export const SERVER__ROOT_HEAD: `${Base}/`;
   export function SERVER__ROOT_HEAD_query(
+    queryParams: QueryParams,
+  ): `${Base}/${string /* queryParams */}`;
+
+  export const SERVER__ROOT_POST: `${Base}/`;
+  export function SERVER__ROOT_POST_query(
     queryParams: QueryParams,
   ): `${Base}/${string /* queryParams */}`;
 
@@ -166,7 +176,9 @@ declare module '$routes' {
       rest_param: 'rest' | 'param';
     };
     SERVERS: {
+      _ROOT_GET: never;
       _ROOT_HEAD: never;
+      _ROOT_POST: never;
       params_one_two_int_more_DELETE: 'one' | 'two' | 'more';
       params_one_two_int_more_GET: 'one' | 'two' | 'more';
       params_one_two_int_more_HEAD: 'one' | 'two' | 'more';
