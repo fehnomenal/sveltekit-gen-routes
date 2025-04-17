@@ -1,5 +1,11 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.2.5
+
+### Patch Changes
+
+- Respect exported functions as server methods _[`#21`](https://github.com/fehnomenal/sveltekit-gen-routes/pull/21) [`2dd1368`](https://github.com/fehnomenal/sveltekit-gen-routes/commit/2dd13680a8b27b32fb8d7fa24651d9cd53e527c0) [@fehnomenal](https://github.com/fehnomenal)_
+
 ## 4.2.4
 
 ### Patch Changes
