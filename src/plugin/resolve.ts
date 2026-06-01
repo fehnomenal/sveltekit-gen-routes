@@ -24,7 +24,9 @@ const makeValidIdentifier = (name: string) => {
 
 const getRoutePathParams = (routeId: string) => {
   if (/\[\[.+\]\]/.test(routeId)) {
-    throw new Error('Optional path parameters are not supported yet!');
+    console.warn(`Optional path parameters are not supported yet (route: '${routeId}'!`);
+
+    return;
   }
 
   const pathParams: PathParameter[] = [];
@@ -105,8 +107,13 @@ export const resolveRouteInfo = (
   getSource: () => string,
   routes: Route[],
 ) => {
-  const key = getRouteKey(routeId);
   const pathParams = getRoutePathParams(routeId);
+
+  if (!pathParams) {
+    return;
+  }
+
+  const key = getRouteKey(routeId);
   const type = getRouteTypeFromFileType(fileType);
 
   function getExisting(type: 'SERVER'): ServerRoute | undefined;
