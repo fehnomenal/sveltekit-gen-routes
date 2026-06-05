@@ -1,5 +1,15 @@
 # @fehnomenal/sveltekit-gen-routes
 
+## 4.3.0
+
+### Minor Changes
+
+- Skip routes with optional params instead of erroring _[`#24`](https://github.com/fehnomenal/sveltekit-gen-routes/pull/24) [`f9ccc29`](https://github.com/fehnomenal/sveltekit-gen-routes/commit/f9ccc296944406f3b721501c67137e926c015a07) [@fehnomenal](https://github.com/fehnomenal)_
+
+### Patch Changes
+
+- Respect exported functions as server methods _[`#21`](https://github.com/fehnomenal/sveltekit-gen-routes/pull/21) [`2dd1368`](https://github.com/fehnomenal/sveltekit-gen-routes/commit/2dd13680a8b27b32fb8d7fa24651d9cd53e527c0) [@fehnomenal](https://github.com/fehnomenal)_
+
 ## 4.2.4
 
 ### Patch Changes
